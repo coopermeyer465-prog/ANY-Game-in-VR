@@ -1,0 +1,60 @@
+# ninja log v5
+1	11	0	/Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86/CMakeFiles/cmake.verify_globs	7ff3e7b36714d1ea
+1	127	1774563912635012202	openxr-sdk/src/CMakeFiles/openxr-gfxwrapper.dir/common/gfxwrapper_opengl.c.o	a32242536815f86c
+3	160	1774563912662082637	openxr-sdk/src/CMakeFiles/android_native_app_glue.dir/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/sources/android/native_app_glue/android_native_app_glue.c.o	8e3f795c42699be5
+160	236	1774563912747356809	openxr-sdk/src/external/glad2/CMakeFiles/openxr-glad-loader.dir/src/egl.c.o	41f6340331f8dc36
+128	369	1774563912876116547	openxr-sdk/src/external/glad2/CMakeFiles/openxr-glad-loader.dir/src/gl.c.o	54e71199565d956b
+370	426	1774563912940305000	openxr-sdk/src/external/glad2/libopenxr-glad-loader.a	afbb25172a7c2602
+429	488	1774563913002116000	openxr-sdk/src/libopenxr-gfxwrapper.a	9c301ed71a884ffd
+1	612	1774563913031822515	openxr-sdk/include/openxr/openxr_loader_negotiation.h	44e9ea9408e8583d
+1	612	1774563913031822515	/Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86/openxr-sdk/include/openxr/openxr_loader_negotiation.h	44e9ea9408e8583d
+1	619	1774563913026256140	openxr-sdk/include/openxr/openxr_reflection_structs.h	b2c0f371139753ba
+1	619	1774563913026256140	/Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86/openxr-sdk/include/openxr/openxr_reflection_structs.h	b2c0f371139753ba
+1	620	1774563913029424028	openxr-sdk/include/openxr/openxr_platform.h	510a689663be7882
+1	620	1774563913029424028	/Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86/openxr-sdk/include/openxr/openxr_platform.h	510a689663be7882
+1	622	1774563913018692435	openxr-sdk/include/openxr/openxr_reflection.h	8aa56903b1d8a68c
+1	622	1774563913018692435	/Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86/openxr-sdk/include/openxr/openxr_reflection.h	8aa56903b1d8a68c
+0	633	1774563913051914940	openxr-sdk/include/openxr/openxr.h	68e99bc318e86f2c
+0	633	1774563913051914940	/Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86/openxr-sdk/include/openxr/openxr.h	68e99bc318e86f2c
+4	634	1774563913057928347	openxr-sdk/src/xr_generated_dispatch_table_core.c	bcab600e95d0db4d
+4	634	1774563913057928347	/Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86/openxr-sdk/src/xr_generated_dispatch_table_core.c	bcab600e95d0db4d
+5	640	1774563913069409798	openxr-sdk/src/xr_generated_dispatch_table_core.h	bb673f9b2b7306b5
+5	640	1774563913069409798	/Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86/openxr-sdk/src/xr_generated_dispatch_table_core.h	bb673f9b2b7306b5
+1	643	1774563913052597966	openxr-sdk/include/openxr/openxr_reflection_parent_structs.h	f66b16f6c870d6fe
+1	643	1774563913052597966	/Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86/openxr-sdk/include/openxr/openxr_reflection_parent_structs.h	f66b16f6c870d6fe
+643	979	1774563913443807113	openxr-sdk/src/loader/xr_generated_loader.hpp	687de00e2da05228
+643	979	1774563913443807113	/Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86/openxr-sdk/src/loader/xr_generated_loader.hpp	687de00e2da05228
+643	979	1774563913445217832	openxr-sdk/src/loader/xr_generated_loader.cpp	2d265feee4508e22
+643	979	1774563913445217832	/Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86/openxr-sdk/src/loader/xr_generated_loader.cpp	2d265feee4508e22
+980	1859	1774563914366518679	CMakeFiles/quest_headpose_xr.dir/quest_headpose_xr/platformplugin_factory.cpp.o	e4a1dd0faebcb71c
+980	2155	1774563914658110309	CMakeFiles/quest_headpose_xr.dir/quest_headpose_xr/pch.cpp.o	ae49d50ba6c854e7
+980	2190	1774563914696673528	CMakeFiles/quest_headpose_xr.dir/quest_headpose_xr/swapchain_image_data.cpp.o	f8a329a73ad67345
+983	2345	1774563914851193064	openxr-sdk/src/loader/CMakeFiles/openxr_loader.dir/android_utilities.cpp.o	78cdd1715871d754
+979	2362	1774563914847867055	CMakeFiles/quest_headpose_xr.dir/quest_headpose_xr/main.cpp.o	f358653fa1b8f51
+979	2377	1774563914873931929	CMakeFiles/quest_headpose_xr.dir/quest_headpose_xr/logger.cpp.o	412bb0d2571327e9
+980	2446	1774563914950483463	CMakeFiles/quest_headpose_xr.dir/quest_headpose_xr/platformplugin_android.cpp.o	e1649adff53e4d2e
+981	2582	1774563915089777799	CMakeFiles/quest_headpose_xr.dir/quest_headpose_xr/graphicsplugin_factory.cpp.o	f5ea7fc8cab46b51
+982	3058	1774563915560433748	CMakeFiles/quest_headpose_xr.dir/quest_headpose_xr/graphicsplugin_opengles.cpp.o	b87be3e75c75ca95
+2446	3516	1774563916018027282	openxr-sdk/src/loader/CMakeFiles/openxr_loader.dir/loader_properties.cpp.o	10b233da4d5f8655
+2377	3692	1774563916196660736	openxr-sdk/src/loader/CMakeFiles/openxr_loader.dir/loader_logger_recorders.cpp.o	18c8eea37fb24b03
+2190	3693	1774563916191873468	openxr-sdk/src/loader/CMakeFiles/openxr_loader.dir/loader_init_data.cpp.o	a315b6b4a1d7814f
+3693	3769	1774563916281817244	openxr-sdk/src/loader/CMakeFiles/openxr_loader.dir/__/xr_generated_dispatch_table_core.c.o	6b308abfa3b843c5
+2156	4035	1774563916535731093	openxr-sdk/src/loader/CMakeFiles/openxr_loader.dir/loader_core.cpp.o	a73dc360714a6386
+979	4049	1774563916531158946	CMakeFiles/quest_headpose_xr.dir/quest_headpose_xr/openxr_program.cpp.o	8744e4534b1c15f9
+2345	4189	1774563916694079294	openxr-sdk/src/loader/CMakeFiles/openxr_loader.dir/loader_instance.cpp.o	c4f0d983e9aee376
+1861	4232	1774563916733957525	openxr-sdk/src/loader/CMakeFiles/openxr_loader.dir/api_layer_interface.cpp.o	639c0653571b9878
+2362	4402	1774563916902132630	openxr-sdk/src/loader/CMakeFiles/openxr_loader.dir/loader_logger.cpp.o	ad9cb431d6c487f4
+3770	4927	1774563917427479145	openxr-sdk/src/loader/CMakeFiles/openxr_loader.dir/Users/marissameyer/Desktop/Games_In_VR/third_party/openxr-sdk-source/src/common/filesystem_utils.cpp.o	977fa3ec915f3b59
+4233	4976	1774563917464661853	openxr-sdk/src/loader/CMakeFiles/openxr_loader.dir/Users/marissameyer/Desktop/Games_In_VR/third_party/openxr-sdk-source/src/external/android-jni-wrappers/wrap/android.content.cpp.o	f06bdc82a0870eaa
+4402	5102	1774563917611036905	openxr-sdk/src/loader/CMakeFiles/openxr_loader.dir/Users/marissameyer/Desktop/Games_In_VR/third_party/openxr-sdk-source/src/external/android-jni-wrappers/wrap/android.database.cpp.o	858c3f9c6af29a8
+3058	5250	1774563917745283313	openxr-sdk/src/loader/CMakeFiles/openxr_loader.dir/runtime_interface.cpp.o	361d36dc2e4d6fcf
+3516	5255	1774563917729832409	openxr-sdk/src/loader/CMakeFiles/openxr_loader.dir/Users/marissameyer/Desktop/Games_In_VR/third_party/openxr-sdk-source/src/common/object_info.cpp.o	33c05576293435d3
+3692	5298	1774563917802250952	openxr-sdk/src/loader/CMakeFiles/openxr_loader.dir/xr_generated_loader.cpp.o	9faf06ef7df2570a
+2582	5333	1774563917830125577	openxr-sdk/src/loader/CMakeFiles/openxr_loader.dir/manifest_file.cpp.o	535e5ce0a4492907
+4189	5446	1774563917949068078	openxr-sdk/src/loader/CMakeFiles/openxr_loader.dir/Users/marissameyer/Desktop/Games_In_VR/third_party/openxr-sdk-source/src/external/jsoncpp/src/lib_json/json_writer.cpp.o	6c6d8c37526d54cb
+4927	5487	1774563917996981878	openxr-sdk/src/loader/CMakeFiles/openxr_loader.dir/Users/marissameyer/Desktop/Games_In_VR/third_party/openxr-sdk-source/src/external/android-jni-wrappers/wrap/android.net.cpp.o	97941974235aac97
+4049	5570	1774563918074935923	openxr-sdk/src/loader/CMakeFiles/openxr_loader.dir/Users/marissameyer/Desktop/Games_In_VR/third_party/openxr-sdk-source/src/external/jsoncpp/src/lib_json/json_value.cpp.o	8f4271d5157001e3
+4976	5678	1774563918185501819	openxr-sdk/src/loader/CMakeFiles/openxr_loader.dir/Users/marissameyer/Desktop/Games_In_VR/third_party/openxr-sdk-source/src/external/jnipp/jnipp.cpp.o	9baa672319b93e96
+4035	5685	1774563918190780368	openxr-sdk/src/loader/CMakeFiles/openxr_loader.dir/Users/marissameyer/Desktop/Games_In_VR/third_party/openxr-sdk-source/src/external/jsoncpp/src/lib_json/json_reader.cpp.o	d8a9d93253023e48
+5685	5762	1774563918262091811	/Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/build/intermediates/cxx/Debug/2v593h5z/obj/x86/libopenxr_loader.so	7e9beb12e4278c52
+5762	5816	1774563918323955549	/Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/build/intermediates/cxx/Debug/2v593h5z/obj/x86/libquest_headpose_xr.so	77acfa44de05a163

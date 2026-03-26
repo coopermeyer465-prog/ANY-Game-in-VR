@@ -1,0 +1,474 @@
+The target system is: Android - 1 - i686
+The host system is: Darwin - 25.3.0 - arm64
+Compiling the C compiler identification source file "CMakeCCompilerId.c" succeeded.
+Compiler: /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/bin/clang 
+Build flags: -g;-DANDROID;-fdata-sections;-ffunction-sections;-funwind-tables;-fstack-protector-strong;-no-canonical-prefixes;-D_FORTIFY_SOURCE=2;-Wformat;-Werror=format-security;
+Id flags: -c;--target=i686-none-linux-android29 
+
+The output was:
+0
+
+
+Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "CMakeCCompilerId.o"
+
+The C compiler identification is Clang, found in "/Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86/CMakeFiles/3.22.1-g37088a8/CompilerIdC/CMakeCCompilerId.o"
+
+Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" succeeded.
+Compiler: /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/bin/clang++ 
+Build flags: -g;-DANDROID;-fdata-sections;-ffunction-sections;-funwind-tables;-fstack-protector-strong;-no-canonical-prefixes;-D_FORTIFY_SOURCE=2;-Wformat;-Werror=format-security;;
+Id flags: -c;--target=i686-none-linux-android29 
+
+The output was:
+0
+
+
+Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "CMakeCXXCompilerId.o"
+
+The CXX compiler identification is Clang, found in "/Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86/CMakeFiles/3.22.1-g37088a8/CompilerIdCXX/CMakeCXXCompilerId.o"
+
+Detecting C compiler ABI info compiled with the following output:
+Change Dir: /Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/opt/homebrew/share/android-commandlinetools/cmake/3.22.1/bin/ninja cmTC_51d31 && [1/2] Building C object CMakeFiles/cmTC_51d31.dir/CMakeCCompilerABI.c.o
+Android (11349228, +pgo, +bolt, +lto, -mlgo, based on r487747e) clang version 17.0.2 (https://android.googlesource.com/toolchain/llvm-project d9f89f4d16663d5012e5c09495f3b30ece3d2362)
+Target: i686-none-linux-android29
+Thread model: posix
+InstalledDir: /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/bin
+ (in-process)
+ "/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/bin/clang" -cc1 -triple i686-none-linux-android29 -emit-obj -mrelax-all -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name CMakeCCompilerABI.c -mrelocation-model pic -pic-level 2 -pic-is-pie -mframe-pointer=all -ffp-contract=on -fno-rounding-math -mconstructor-aliases -funwind-tables=2 -target-cpu i686 -target-feature +ssse3 -tune-cpu generic -mllvm -treat-scalable-fixed-error-as-warning -debug-info-kind=constructor -dwarf-version=4 -debugger-tuning=gdb -v -ffunction-sections -fdata-sections "-fcoverage-compilation-dir=/Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86/CMakeFiles/CMakeTmp" -resource-dir /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/lib/clang/17 -dependency-file CMakeFiles/cmTC_51d31.dir/CMakeCCompilerABI.c.o.d -MT CMakeFiles/cmTC_51d31.dir/CMakeCCompilerABI.c.o -sys-header-deps -D ANDROID -D _FORTIFY_SOURCE=2 -isysroot /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot -internal-isystem /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/lib/clang/17/include -internal-isystem /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/local/include -internal-externc-isystem /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/include/i686-linux-android -internal-externc-isystem /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/include -internal-externc-isystem /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/include -Wformat "-fdebug-compilation-dir=/Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86/CMakeFiles/CMakeTmp" -ferror-limit 19 -stack-protector 2 -fgnuc-version=4.2.1 -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_51d31.dir/CMakeCCompilerABI.c.o -x c /opt/homebrew/share/android-commandlinetools/cmake/3.22.1/share/cmake-3.22/Modules/CMakeCCompilerABI.c
+clang -cc1 version 17.0.2 based upon LLVM 17.0.2 default target x86_64-apple-darwin25.3.0
+ignoring nonexistent directory "/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/local/include"
+ignoring nonexistent directory "/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/include"
+#include "..." search starts here:
+#include <...> search starts here:
+ /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/lib/clang/17/include
+ /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/include/i686-linux-android
+ /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/include
+End of search list.
+[2/2] Linking C executable cmTC_51d31
+Android (11349228, +pgo, +bolt, +lto, -mlgo, based on r487747e) clang version 17.0.2 (https://android.googlesource.com/toolchain/llvm-project d9f89f4d16663d5012e5c09495f3b30ece3d2362)
+Target: i686-none-linux-android29
+Thread model: posix
+InstalledDir: /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/bin
+ "/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/bin/ld.lld" --sysroot=/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot -pie -z now -z relro --hash-style=gnu --eh-frame-hdr -m elf_i386 -dynamic-linker /system/bin/linker -o cmTC_51d31 /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/i686-linux-android/29/crtbegin_dynamic.o -L/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/lib/clang/17/lib/linux/i386 -L/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/i686-linux-android/29 -L/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/i686-linux-android -L/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib --build-id=sha1 --no-rosegment --no-undefined-version --fatal-warnings --no-undefined CMakeFiles/cmTC_51d31.dir/CMakeCCompilerABI.c.o /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/lib/clang/17/lib/linux/libclang_rt.builtins-i686-android.a -l:libunwind.a -ldl -lc /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/lib/clang/17/lib/linux/libclang_rt.builtins-i686-android.a -l:libunwind.a -ldl /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/i686-linux-android/29/crtend_android.o
+
+
+
+Parsed C implicit include dir info from above output: rv=done
+  found start of include info
+  found start of implicit include info
+    add: [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/lib/clang/17/include]
+    add: [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/include/i686-linux-android]
+    add: [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/include]
+  end of search list found
+  collapse include dir [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/lib/clang/17/include] ==> [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/lib/clang/17/include]
+  collapse include dir [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/include/i686-linux-android] ==> [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/include/i686-linux-android]
+  collapse include dir [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/include] ==> [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/include]
+  implicit include dirs: [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/lib/clang/17/include;/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/include/i686-linux-android;/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/include]
+
+
+Parsed C implicit link information from above output:
+  link line regex: [^( *|.*[/\])(ld\.lld|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\]+-)?ld|collect2)[^/\]*( |$)]
+  ignore line: [Change Dir: /Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86/CMakeFiles/CMakeTmp]
+  ignore line: []
+  ignore line: [Run Build Command(s):/opt/homebrew/share/android-commandlinetools/cmake/3.22.1/bin/ninja cmTC_51d31 && [1/2] Building C object CMakeFiles/cmTC_51d31.dir/CMakeCCompilerABI.c.o]
+  ignore line: [Android (11349228  +pgo  +bolt  +lto  -mlgo  based on r487747e) clang version 17.0.2 (https://android.googlesource.com/toolchain/llvm-project d9f89f4d16663d5012e5c09495f3b30ece3d2362)]
+  ignore line: [Target: i686-none-linux-android29]
+  ignore line: [Thread model: posix]
+  ignore line: [InstalledDir: /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/bin]
+  ignore line: [ (in-process)]
+  ignore line: [ "/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/bin/clang" -cc1 -triple i686-none-linux-android29 -emit-obj -mrelax-all -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name CMakeCCompilerABI.c -mrelocation-model pic -pic-level 2 -pic-is-pie -mframe-pointer=all -ffp-contract=on -fno-rounding-math -mconstructor-aliases -funwind-tables=2 -target-cpu i686 -target-feature +ssse3 -tune-cpu generic -mllvm -treat-scalable-fixed-error-as-warning -debug-info-kind=constructor -dwarf-version=4 -debugger-tuning=gdb -v -ffunction-sections -fdata-sections "-fcoverage-compilation-dir=/Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86/CMakeFiles/CMakeTmp" -resource-dir /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/lib/clang/17 -dependency-file CMakeFiles/cmTC_51d31.dir/CMakeCCompilerABI.c.o.d -MT CMakeFiles/cmTC_51d31.dir/CMakeCCompilerABI.c.o -sys-header-deps -D ANDROID -D _FORTIFY_SOURCE=2 -isysroot /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot -internal-isystem /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/lib/clang/17/include -internal-isystem /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/local/include -internal-externc-isystem /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/include/i686-linux-android -internal-externc-isystem /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/include -internal-externc-isystem /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/include -Wformat "-fdebug-compilation-dir=/Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86/CMakeFiles/CMakeTmp" -ferror-limit 19 -stack-protector 2 -fgnuc-version=4.2.1 -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_51d31.dir/CMakeCCompilerABI.c.o -x c /opt/homebrew/share/android-commandlinetools/cmake/3.22.1/share/cmake-3.22/Modules/CMakeCCompilerABI.c]
+  ignore line: [clang -cc1 version 17.0.2 based upon LLVM 17.0.2 default target x86_64-apple-darwin25.3.0]
+  ignore line: [ignoring nonexistent directory "/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/local/include"]
+  ignore line: [ignoring nonexistent directory "/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/include"]
+  ignore line: [#include "..." search starts here:]
+  ignore line: [#include <...> search starts here:]
+  ignore line: [ /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/lib/clang/17/include]
+  ignore line: [ /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/include/i686-linux-android]
+  ignore line: [ /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/include]
+  ignore line: [End of search list.]
+  ignore line: [[2/2] Linking C executable cmTC_51d31]
+  ignore line: [Android (11349228  +pgo  +bolt  +lto  -mlgo  based on r487747e) clang version 17.0.2 (https://android.googlesource.com/toolchain/llvm-project d9f89f4d16663d5012e5c09495f3b30ece3d2362)]
+  ignore line: [Target: i686-none-linux-android29]
+  ignore line: [Thread model: posix]
+  ignore line: [InstalledDir: /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/bin]
+  link line: [ "/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/bin/ld.lld" --sysroot=/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot -pie -z now -z relro --hash-style=gnu --eh-frame-hdr -m elf_i386 -dynamic-linker /system/bin/linker -o cmTC_51d31 /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/i686-linux-android/29/crtbegin_dynamic.o -L/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/lib/clang/17/lib/linux/i386 -L/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/i686-linux-android/29 -L/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/i686-linux-android -L/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib --build-id=sha1 --no-rosegment --no-undefined-version --fatal-warnings --no-undefined CMakeFiles/cmTC_51d31.dir/CMakeCCompilerABI.c.o /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/lib/clang/17/lib/linux/libclang_rt.builtins-i686-android.a -l:libunwind.a -ldl -lc /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/lib/clang/17/lib/linux/libclang_rt.builtins-i686-android.a -l:libunwind.a -ldl /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/i686-linux-android/29/crtend_android.o]
+    arg [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/bin/ld.lld] ==> ignore
+    arg [--sysroot=/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot] ==> ignore
+    arg [-pie] ==> ignore
+    arg [-znow] ==> ignore
+    arg [-zrelro] ==> ignore
+    arg [--hash-style=gnu] ==> ignore
+    arg [--eh-frame-hdr] ==> ignore
+    arg [-m] ==> ignore
+    arg [elf_i386] ==> ignore
+    arg [-dynamic-linker] ==> ignore
+    arg [/system/bin/linker] ==> ignore
+    arg [-o] ==> ignore
+    arg [cmTC_51d31] ==> ignore
+    arg [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/i686-linux-android/29/crtbegin_dynamic.o] ==> obj [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/i686-linux-android/29/crtbegin_dynamic.o]
+    arg [-L/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/lib/clang/17/lib/linux/i386] ==> dir [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/lib/clang/17/lib/linux/i386]
+    arg [-L/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/i686-linux-android/29] ==> dir [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/i686-linux-android/29]
+    arg [-L/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/i686-linux-android] ==> dir [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/i686-linux-android]
+    arg [-L/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib] ==> dir [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib]
+    arg [--build-id=sha1] ==> ignore
+    arg [--no-rosegment] ==> ignore
+    arg [--no-undefined-version] ==> ignore
+    arg [--fatal-warnings] ==> ignore
+    arg [--no-undefined] ==> ignore
+    arg [CMakeFiles/cmTC_51d31.dir/CMakeCCompilerABI.c.o] ==> ignore
+    arg [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/lib/clang/17/lib/linux/libclang_rt.builtins-i686-android.a] ==> lib [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/lib/clang/17/lib/linux/libclang_rt.builtins-i686-android.a]
+    arg [-l:libunwind.a] ==> lib [-l:libunwind.a]
+    arg [-ldl] ==> lib [dl]
+    arg [-lc] ==> lib [c]
+    arg [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/lib/clang/17/lib/linux/libclang_rt.builtins-i686-android.a] ==> lib [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/lib/clang/17/lib/linux/libclang_rt.builtins-i686-android.a]
+    arg [-l:libunwind.a] ==> lib [-l:libunwind.a]
+    arg [-ldl] ==> lib [dl]
+    arg [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/i686-linux-android/29/crtend_android.o] ==> obj [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/i686-linux-android/29/crtend_android.o]
+  remove lib [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/lib/clang/17/lib/linux/libclang_rt.builtins-i686-android.a]
+  remove lib [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/lib/clang/17/lib/linux/libclang_rt.builtins-i686-android.a]
+  collapse library dir [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/lib/clang/17/lib/linux/i386] ==> [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/lib/clang/17/lib/linux/i386]
+  collapse library dir [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/i686-linux-android/29] ==> [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/i686-linux-android/29]
+  collapse library dir [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/i686-linux-android] ==> [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/i686-linux-android]
+  collapse library dir [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib] ==> [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib]
+  implicit libs: [-l:libunwind.a;dl;c;-l:libunwind.a;dl]
+  implicit objs: [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/i686-linux-android/29/crtbegin_dynamic.o;/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/i686-linux-android/29/crtend_android.o]
+  implicit dirs: [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/lib/clang/17/lib/linux/i386;/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/i686-linux-android/29;/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/i686-linux-android;/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib]
+  implicit fwks: []
+
+
+Detecting CXX compiler ABI info compiled with the following output:
+Change Dir: /Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/opt/homebrew/share/android-commandlinetools/cmake/3.22.1/bin/ninja cmTC_ca619 && [1/2] Building CXX object CMakeFiles/cmTC_ca619.dir/CMakeCXXCompilerABI.cpp.o
+Android (11349228, +pgo, +bolt, +lto, -mlgo, based on r487747e) clang version 17.0.2 (https://android.googlesource.com/toolchain/llvm-project d9f89f4d16663d5012e5c09495f3b30ece3d2362)
+Target: i686-none-linux-android29
+Thread model: posix
+InstalledDir: /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/bin
+ (in-process)
+ "/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/bin/clang++" -cc1 -triple i686-none-linux-android29 -emit-obj -mrelax-all -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name CMakeCXXCompilerABI.cpp -mrelocation-model pic -pic-level 2 -pic-is-pie -mframe-pointer=all -ffp-contract=on -fno-rounding-math -mconstructor-aliases -funwind-tables=2 -target-cpu i686 -target-feature +ssse3 -tune-cpu generic -mllvm -treat-scalable-fixed-error-as-warning -debug-info-kind=constructor -dwarf-version=4 -debugger-tuning=gdb -v -ffunction-sections -fdata-sections "-fcoverage-compilation-dir=/Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86/CMakeFiles/CMakeTmp" -resource-dir /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/lib/clang/17 -dependency-file CMakeFiles/cmTC_ca619.dir/CMakeCXXCompilerABI.cpp.o.d -MT CMakeFiles/cmTC_ca619.dir/CMakeCXXCompilerABI.cpp.o -sys-header-deps -D ANDROID -D _FORTIFY_SOURCE=2 -isysroot /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot -internal-isystem /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/include/c++/v1 -internal-isystem /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/lib/clang/17/include -internal-isystem /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/local/include -internal-externc-isystem /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/include/i686-linux-android -internal-externc-isystem /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/include -internal-externc-isystem /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/include -Wformat -fdeprecated-macro "-fdebug-compilation-dir=/Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86/CMakeFiles/CMakeTmp" -ferror-limit 19 -stack-protector 2 -fgnuc-version=4.2.1 -fcxx-exceptions -fexceptions -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_ca619.dir/CMakeCXXCompilerABI.cpp.o -x c++ /opt/homebrew/share/android-commandlinetools/cmake/3.22.1/share/cmake-3.22/Modules/CMakeCXXCompilerABI.cpp
+clang -cc1 version 17.0.2 based upon LLVM 17.0.2 default target x86_64-apple-darwin25.3.0
+ignoring nonexistent directory "/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/local/include"
+ignoring nonexistent directory "/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/include"
+#include "..." search starts here:
+#include <...> search starts here:
+ /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/include/c++/v1
+ /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/lib/clang/17/include
+ /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/include/i686-linux-android
+ /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/include
+End of search list.
+[2/2] Linking CXX executable cmTC_ca619
+Android (11349228, +pgo, +bolt, +lto, -mlgo, based on r487747e) clang version 17.0.2 (https://android.googlesource.com/toolchain/llvm-project d9f89f4d16663d5012e5c09495f3b30ece3d2362)
+Target: i686-none-linux-android29
+Thread model: posix
+InstalledDir: /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/bin
+ "/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/bin/ld.lld" --sysroot=/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot -pie -z now -z relro --hash-style=gnu --eh-frame-hdr -m elf_i386 -dynamic-linker /system/bin/linker -o cmTC_ca619 /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/i686-linux-android/29/crtbegin_dynamic.o -L/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/lib/clang/17/lib/linux/i386 -L/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/i686-linux-android/29 -L/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/i686-linux-android -L/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib --build-id=sha1 --no-rosegment --no-undefined-version --fatal-warnings --no-undefined CMakeFiles/cmTC_ca619.dir/CMakeCXXCompilerABI.cpp.o -Bstatic -lc++ -Bdynamic -lm /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/lib/clang/17/lib/linux/libclang_rt.builtins-i686-android.a -l:libunwind.a -ldl -lc /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/lib/clang/17/lib/linux/libclang_rt.builtins-i686-android.a -l:libunwind.a -ldl /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/i686-linux-android/29/crtend_android.o
+
+
+
+Parsed CXX implicit include dir info from above output: rv=done
+  found start of include info
+  found start of implicit include info
+    add: [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/include/c++/v1]
+    add: [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/lib/clang/17/include]
+    add: [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/include/i686-linux-android]
+    add: [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/include]
+  end of search list found
+  collapse include dir [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/include/c++/v1] ==> [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/include/c++/v1]
+  collapse include dir [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/lib/clang/17/include] ==> [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/lib/clang/17/include]
+  collapse include dir [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/include/i686-linux-android] ==> [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/include/i686-linux-android]
+  collapse include dir [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/include] ==> [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/include]
+  implicit include dirs: [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/include/c++/v1;/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/lib/clang/17/include;/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/include/i686-linux-android;/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/include]
+
+
+Parsed CXX implicit link information from above output:
+  link line regex: [^( *|.*[/\])(ld\.lld|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\]+-)?ld|collect2)[^/\]*( |$)]
+  ignore line: [Change Dir: /Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86/CMakeFiles/CMakeTmp]
+  ignore line: []
+  ignore line: [Run Build Command(s):/opt/homebrew/share/android-commandlinetools/cmake/3.22.1/bin/ninja cmTC_ca619 && [1/2] Building CXX object CMakeFiles/cmTC_ca619.dir/CMakeCXXCompilerABI.cpp.o]
+  ignore line: [Android (11349228  +pgo  +bolt  +lto  -mlgo  based on r487747e) clang version 17.0.2 (https://android.googlesource.com/toolchain/llvm-project d9f89f4d16663d5012e5c09495f3b30ece3d2362)]
+  ignore line: [Target: i686-none-linux-android29]
+  ignore line: [Thread model: posix]
+  ignore line: [InstalledDir: /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/bin]
+  ignore line: [ (in-process)]
+  ignore line: [ "/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/bin/clang++" -cc1 -triple i686-none-linux-android29 -emit-obj -mrelax-all -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name CMakeCXXCompilerABI.cpp -mrelocation-model pic -pic-level 2 -pic-is-pie -mframe-pointer=all -ffp-contract=on -fno-rounding-math -mconstructor-aliases -funwind-tables=2 -target-cpu i686 -target-feature +ssse3 -tune-cpu generic -mllvm -treat-scalable-fixed-error-as-warning -debug-info-kind=constructor -dwarf-version=4 -debugger-tuning=gdb -v -ffunction-sections -fdata-sections "-fcoverage-compilation-dir=/Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86/CMakeFiles/CMakeTmp" -resource-dir /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/lib/clang/17 -dependency-file CMakeFiles/cmTC_ca619.dir/CMakeCXXCompilerABI.cpp.o.d -MT CMakeFiles/cmTC_ca619.dir/CMakeCXXCompilerABI.cpp.o -sys-header-deps -D ANDROID -D _FORTIFY_SOURCE=2 -isysroot /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot -internal-isystem /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/include/c++/v1 -internal-isystem /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/lib/clang/17/include -internal-isystem /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/local/include -internal-externc-isystem /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/include/i686-linux-android -internal-externc-isystem /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/include -internal-externc-isystem /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/include -Wformat -fdeprecated-macro "-fdebug-compilation-dir=/Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86/CMakeFiles/CMakeTmp" -ferror-limit 19 -stack-protector 2 -fgnuc-version=4.2.1 -fcxx-exceptions -fexceptions -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_ca619.dir/CMakeCXXCompilerABI.cpp.o -x c++ /opt/homebrew/share/android-commandlinetools/cmake/3.22.1/share/cmake-3.22/Modules/CMakeCXXCompilerABI.cpp]
+  ignore line: [clang -cc1 version 17.0.2 based upon LLVM 17.0.2 default target x86_64-apple-darwin25.3.0]
+  ignore line: [ignoring nonexistent directory "/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/local/include"]
+  ignore line: [ignoring nonexistent directory "/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/include"]
+  ignore line: [#include "..." search starts here:]
+  ignore line: [#include <...> search starts here:]
+  ignore line: [ /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/include/c++/v1]
+  ignore line: [ /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/lib/clang/17/include]
+  ignore line: [ /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/include/i686-linux-android]
+  ignore line: [ /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/include]
+  ignore line: [End of search list.]
+  ignore line: [[2/2] Linking CXX executable cmTC_ca619]
+  ignore line: [Android (11349228  +pgo  +bolt  +lto  -mlgo  based on r487747e) clang version 17.0.2 (https://android.googlesource.com/toolchain/llvm-project d9f89f4d16663d5012e5c09495f3b30ece3d2362)]
+  ignore line: [Target: i686-none-linux-android29]
+  ignore line: [Thread model: posix]
+  ignore line: [InstalledDir: /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/bin]
+  link line: [ "/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/bin/ld.lld" --sysroot=/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot -pie -z now -z relro --hash-style=gnu --eh-frame-hdr -m elf_i386 -dynamic-linker /system/bin/linker -o cmTC_ca619 /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/i686-linux-android/29/crtbegin_dynamic.o -L/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/lib/clang/17/lib/linux/i386 -L/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/i686-linux-android/29 -L/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/i686-linux-android -L/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib --build-id=sha1 --no-rosegment --no-undefined-version --fatal-warnings --no-undefined CMakeFiles/cmTC_ca619.dir/CMakeCXXCompilerABI.cpp.o -Bstatic -lc++ -Bdynamic -lm /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/lib/clang/17/lib/linux/libclang_rt.builtins-i686-android.a -l:libunwind.a -ldl -lc /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/lib/clang/17/lib/linux/libclang_rt.builtins-i686-android.a -l:libunwind.a -ldl /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/i686-linux-android/29/crtend_android.o]
+    arg [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/bin/ld.lld] ==> ignore
+    arg [--sysroot=/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot] ==> ignore
+    arg [-pie] ==> ignore
+    arg [-znow] ==> ignore
+    arg [-zrelro] ==> ignore
+    arg [--hash-style=gnu] ==> ignore
+    arg [--eh-frame-hdr] ==> ignore
+    arg [-m] ==> ignore
+    arg [elf_i386] ==> ignore
+    arg [-dynamic-linker] ==> ignore
+    arg [/system/bin/linker] ==> ignore
+    arg [-o] ==> ignore
+    arg [cmTC_ca619] ==> ignore
+    arg [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/i686-linux-android/29/crtbegin_dynamic.o] ==> obj [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/i686-linux-android/29/crtbegin_dynamic.o]
+    arg [-L/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/lib/clang/17/lib/linux/i386] ==> dir [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/lib/clang/17/lib/linux/i386]
+    arg [-L/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/i686-linux-android/29] ==> dir [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/i686-linux-android/29]
+    arg [-L/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/i686-linux-android] ==> dir [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/i686-linux-android]
+    arg [-L/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib] ==> dir [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib]
+    arg [--build-id=sha1] ==> ignore
+    arg [--no-rosegment] ==> ignore
+    arg [--no-undefined-version] ==> ignore
+    arg [--fatal-warnings] ==> ignore
+    arg [--no-undefined] ==> ignore
+    arg [CMakeFiles/cmTC_ca619.dir/CMakeCXXCompilerABI.cpp.o] ==> ignore
+    arg [-Bstatic] ==> search static
+    arg [-lc++] ==> lib [c++]
+    arg [-Bdynamic] ==> search dynamic
+    arg [-lm] ==> lib [m]
+    arg [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/lib/clang/17/lib/linux/libclang_rt.builtins-i686-android.a] ==> lib [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/lib/clang/17/lib/linux/libclang_rt.builtins-i686-android.a]
+    arg [-l:libunwind.a] ==> lib [-l:libunwind.a]
+    arg [-ldl] ==> lib [dl]
+    arg [-lc] ==> lib [c]
+    arg [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/lib/clang/17/lib/linux/libclang_rt.builtins-i686-android.a] ==> lib [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/lib/clang/17/lib/linux/libclang_rt.builtins-i686-android.a]
+    arg [-l:libunwind.a] ==> lib [-l:libunwind.a]
+    arg [-ldl] ==> lib [dl]
+    arg [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/i686-linux-android/29/crtend_android.o] ==> obj [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/i686-linux-android/29/crtend_android.o]
+  remove lib [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/lib/clang/17/lib/linux/libclang_rt.builtins-i686-android.a]
+  remove lib [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/lib/clang/17/lib/linux/libclang_rt.builtins-i686-android.a]
+  collapse library dir [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/lib/clang/17/lib/linux/i386] ==> [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/lib/clang/17/lib/linux/i386]
+  collapse library dir [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/i686-linux-android/29] ==> [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/i686-linux-android/29]
+  collapse library dir [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/i686-linux-android] ==> [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/i686-linux-android]
+  collapse library dir [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib] ==> [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib]
+  implicit libs: [c++;m;-l:libunwind.a;dl;c;-l:libunwind.a;dl]
+  implicit objs: [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/i686-linux-android/29/crtbegin_dynamic.o;/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/i686-linux-android/29/crtend_android.o]
+  implicit dirs: [/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/lib/clang/17/lib/linux/i386;/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/i686-linux-android/29;/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/i686-linux-android;/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib]
+  implicit fwks: []
+
+
+Performing C++ SOURCE FILE Test HAVE_FILESYSTEM_IN_STD succeeded with the following output:
+Change Dir: /Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/opt/homebrew/share/android-commandlinetools/cmake/3.22.1/bin/ninja cmTC_5d28c && [1/2] Building CXX object CMakeFiles/cmTC_5d28c.dir/src.cxx.o
+[2/2] Linking CXX static library libcmTC_5d28c.a
+
+
+Source file was:
+#include <stdfs_conditions.h>
+    
+    #if defined(USE_FINAL_FS) && USE_FINAL_FS
+    #include <filesystem>
+    using namespace std::filesystem;
+    #endif
+    int main() {
+        (void)is_regular_file("/");
+        return 0;
+    }
+    
+    
+Performing C++ SOURCE FILE Test HAVE_FILESYSTEM_IN_STD_17 succeeded with the following output:
+Change Dir: /Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/opt/homebrew/share/android-commandlinetools/cmake/3.22.1/bin/ninja cmTC_b1208 && [1/2] Building CXX object CMakeFiles/cmTC_b1208.dir/src.cxx.o
+[2/2] Linking CXX static library libcmTC_b1208.a
+
+
+Source file was:
+#include <stdfs_conditions.h>
+    
+    #if defined(USE_FINAL_FS) && USE_FINAL_FS
+    #include <filesystem>
+    using namespace std::filesystem;
+    #endif
+    int main() {
+        (void)is_regular_file("/");
+        return 0;
+    }
+    
+    
+Performing C++ SOURCE FILE Test HAVE_FILESYSTEM_WITHOUT_LIB succeeded with the following output:
+Change Dir: /Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/opt/homebrew/share/android-commandlinetools/cmake/3.22.1/bin/ninja cmTC_0e879 && [1/2] Building CXX object CMakeFiles/cmTC_0e879.dir/src.cxx.o
+[2/2] Linking CXX executable cmTC_0e879
+
+
+Source file was:
+#include <stdfs_conditions.h>
+    
+    #if defined(USE_FINAL_FS) && USE_FINAL_FS
+    #include <filesystem>
+    using namespace std::filesystem;
+    #endif
+    #if defined(USE_EXPERIMENTAL_FS) && USE_EXPERIMENTAL_FS
+    #include <experimental/filesystem>
+    using namespace std::experimental::filesystem;
+    #endif
+    int main() {
+        (void)is_regular_file("/");
+        return 0;
+    }
+    
+    
+Performing C++ SOURCE FILE Test HAVE_EGL succeeded with the following output:
+Change Dir: /Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/opt/homebrew/share/android-commandlinetools/cmake/3.22.1/bin/ninja cmTC_b055d && [1/2] Building CXX object CMakeFiles/cmTC_b055d.dir/src.cxx.o
+[2/2] Linking CXX executable cmTC_b055d
+
+
+Source file was:
+
+#include <EGL/egl.h>
+
+int main(int argc, char *argv[]) {
+    EGLint x = 0; EGLDisplay dpy = 0; EGLContext ctx = 0;
+    eglDestroyContext(dpy, ctx);
+}
+Determining if the include file pthread.h exists passed with the following output:
+Change Dir: /Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/opt/homebrew/share/android-commandlinetools/cmake/3.22.1/bin/ninja cmTC_616bc && [1/2] Building C object CMakeFiles/cmTC_616bc.dir/CheckIncludeFile.c.o
+[2/2] Linking C executable cmTC_616bc
+
+
+
+Determining if the clock_gettime exist passed with the following output:
+Change Dir: /Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/opt/homebrew/share/android-commandlinetools/cmake/3.22.1/bin/ninja cmTC_da067 && [1/2] Building C object CMakeFiles/cmTC_da067.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_da067
+
+
+File /Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <time.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef clock_gettime
+  return ((int*)(&clock_gettime))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Performing C++ SOURCE FILE Test SUPPORTS_Wall succeeded with the following output:
+Change Dir: /Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/opt/homebrew/share/android-commandlinetools/cmake/3.22.1/bin/ninja cmTC_0881d && [1/2] Building CXX object CMakeFiles/cmTC_0881d.dir/src.cxx.o
+[2/2] Linking CXX executable cmTC_0881d
+
+
+Source file was:
+int main() { return 0; }
+Performing C SOURCE FILE Test SUPPORTS_C_Wall succeeded with the following output:
+Change Dir: /Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/opt/homebrew/share/android-commandlinetools/cmake/3.22.1/bin/ninja cmTC_4b50c && [1/2] Building C object CMakeFiles/cmTC_4b50c.dir/src.c.o
+[2/2] Linking C executable cmTC_4b50c
+
+
+Source file was:
+int main(void) { return 0; }
+Performing C++ SOURCE FILE Test SUPPORTS_Werrorunusedparameter succeeded with the following output:
+Change Dir: /Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/opt/homebrew/share/android-commandlinetools/cmake/3.22.1/bin/ninja cmTC_5d131 && [1/2] Building CXX object CMakeFiles/cmTC_5d131.dir/src.cxx.o
+[2/2] Linking CXX executable cmTC_5d131
+
+
+Source file was:
+int main() { return 0; }
+Performing C SOURCE FILE Test SUPPORTS_C_Werrorunusedparameter succeeded with the following output:
+Change Dir: /Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/opt/homebrew/share/android-commandlinetools/cmake/3.22.1/bin/ninja cmTC_4c222 && [1/2] Building C object CMakeFiles/cmTC_4c222.dir/src.c.o
+[2/2] Linking C executable cmTC_4c222
+
+
+Source file was:
+int main(void) { return 0; }
+Performing C++ SOURCE FILE Test SUPPORTS_Werrorunusedargument succeeded with the following output:
+Change Dir: /Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/opt/homebrew/share/android-commandlinetools/cmake/3.22.1/bin/ninja cmTC_c1b34 && [1/2] Building CXX object CMakeFiles/cmTC_c1b34.dir/src.cxx.o
+[2/2] Linking CXX executable cmTC_c1b34
+
+
+Source file was:
+int main() { return 0; }
+Performing C SOURCE FILE Test SUPPORTS_C_Werrorunusedargument succeeded with the following output:
+Change Dir: /Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/opt/homebrew/share/android-commandlinetools/cmake/3.22.1/bin/ninja cmTC_e21dd && [1/2] Building C object CMakeFiles/cmTC_e21dd.dir/src.c.o
+[2/2] Linking C executable cmTC_e21dd
+
+
+Source file was:
+int main(void) { return 0; }
+Performing C++ SOURCE FILE Test SUPPORTS_Wpointerarith succeeded with the following output:
+Change Dir: /Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/opt/homebrew/share/android-commandlinetools/cmake/3.22.1/bin/ninja cmTC_48475 && [1/2] Building CXX object CMakeFiles/cmTC_48475.dir/src.cxx.o
+[2/2] Linking CXX executable cmTC_48475
+
+
+Source file was:
+int main() { return 0; }
+Performing C SOURCE FILE Test SUPPORTS_C_Wpointerarith succeeded with the following output:
+Change Dir: /Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/opt/homebrew/share/android-commandlinetools/cmake/3.22.1/bin/ninja cmTC_efbaf && [1/2] Building C object CMakeFiles/cmTC_efbaf.dir/src.c.o
+[2/2] Linking C executable cmTC_efbaf
+
+
+Source file was:
+int main(void) { return 0; }
+Performing C SOURCE FILE Test HAVE_UNDEF succeeded with the following output:
+Change Dir: /Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/opt/homebrew/share/android-commandlinetools/cmake/3.22.1/bin/ninja cmTC_0f834 && [1/2] Building C object CMakeFiles/cmTC_0f834.dir/src.c.o
+[2/2] Linking C executable cmTC_0f834
+
+
+Source file was:
+int main(void) { return 0; }
+Performing C SOURCE FILE Test HAVE_TAUTOLOGICAL_TYPE_LIMIT succeeded with the following output:
+Change Dir: /Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/opt/homebrew/share/android-commandlinetools/cmake/3.22.1/bin/ninja cmTC_87757 && [1/2] Building C object CMakeFiles/cmTC_87757.dir/src.c.o
+[2/2] Linking C executable cmTC_87757
+
+
+Source file was:
+int main(void) { return 0; }
+Performing C SOURCE FILE Test HAVE_MISSING_BRACES succeeded with the following output:
+Change Dir: /Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/opt/homebrew/share/android-commandlinetools/cmake/3.22.1/bin/ninja cmTC_412ea && [1/2] Building C object CMakeFiles/cmTC_412ea.dir/src.c.o
+[2/2] Linking C executable cmTC_412ea
+
+
+Source file was:
+int main(void) { return 0; }
+Performing C SOURCE FILE Test HAVE_UNREACHABLE_CODE succeeded with the following output:
+Change Dir: /Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/opt/homebrew/share/android-commandlinetools/cmake/3.22.1/bin/ninja cmTC_b90d2 && [1/2] Building C object CMakeFiles/cmTC_b90d2.dir/src.c.o
+[2/2] Linking C executable cmTC_b90d2
+
+
+Source file was:
+int main(void) { return 0; }

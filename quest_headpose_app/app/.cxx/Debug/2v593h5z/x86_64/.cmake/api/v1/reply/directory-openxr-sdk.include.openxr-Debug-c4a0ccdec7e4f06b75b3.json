@@ -1,0 +1,49 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"install"
+		],
+		"files" : 
+		[
+			"/Users/marissameyer/Desktop/Games In VR/third_party/openxr-sdk-source/include/openxr/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 130,
+				"parent" : 0
+			}
+		]
+	},
+	"installers" : 
+	[
+		{
+			"backtrace" : 1,
+			"component" : "Headers",
+			"destination" : "include/openxr",
+			"paths" : 
+			[
+				"/Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86_64/openxr-sdk/include/openxr/openxr_platform_defines.h",
+				"/Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86_64/openxr-sdk/include/openxr/openxr.h",
+				"/Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86_64/openxr-sdk/include/openxr/openxr_loader_negotiation.h",
+				"/Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86_64/openxr-sdk/include/openxr/openxr_platform.h",
+				"/Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86_64/openxr-sdk/include/openxr/openxr_reflection.h",
+				"/Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86_64/openxr-sdk/include/openxr/openxr_reflection_structs.h",
+				"/Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86_64/openxr-sdk/include/openxr/openxr_reflection_parent_structs.h"
+			],
+			"type" : "file"
+		}
+	],
+	"paths" : 
+	{
+		"build" : "openxr-sdk/include/openxr",
+		"source" : "/Users/marissameyer/Desktop/Games In VR/third_party/openxr-sdk-source/include/openxr"
+	}
+}

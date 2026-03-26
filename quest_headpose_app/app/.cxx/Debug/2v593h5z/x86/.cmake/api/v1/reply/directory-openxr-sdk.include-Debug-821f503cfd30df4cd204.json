@@ -1,0 +1,14 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : [],
+		"files" : [],
+		"nodes" : []
+	},
+	"installers" : [],
+	"paths" : 
+	{
+		"build" : "openxr-sdk/include",
+		"source" : "/Users/marissameyer/Desktop/Games In VR/third_party/openxr-sdk-source/include"
+	}
+}

@@ -1,0 +1,230 @@
+{
+  "buildFiles": [
+    "/Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/src/main/cpp/CMakeLists.txt",
+    "/Users/marissameyer/Desktop/Games In VR/third_party/openxr-sdk-source/CMakeLists.txt",
+    "/Users/marissameyer/Desktop/Games In VR/third_party/openxr-sdk-source/include/CMakeLists.txt",
+    "/Users/marissameyer/Desktop/Games In VR/third_party/openxr-sdk-source/include/openxr/CMakeLists.txt",
+    "/Users/marissameyer/Desktop/Games In VR/third_party/openxr-sdk-source/src/CMakeLists.txt",
+    "/Users/marissameyer/Desktop/Games In VR/third_party/openxr-sdk-source/src/external/glad2/CMakeLists.txt",
+    "/Users/marissameyer/Desktop/Games In VR/third_party/openxr-sdk-source/src/loader/CMakeLists.txt"
+  ],
+  "cleanCommandsComponents": [
+    [
+      "/opt/homebrew/share/android-commandlinetools/cmake/3.22.1/bin/ninja",
+      "-C",
+      "/Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86",
+      "clean"
+    ]
+  ],
+  "buildTargetsCommandComponents": [
+    "/opt/homebrew/share/android-commandlinetools/cmake/3.22.1/bin/ninja",
+    "-C",
+    "/Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86",
+    "{LIST_OF_TARGETS_TO_BUILD}"
+  ],
+  "libraries": {
+    "Continuous::@8d044d8950fbf1e93037": {
+      "toolchain": "toolchain",
+      "abi": "x86",
+      "artifactName": "Continuous"
+    },
+    "ContinuousBuild::@8d044d8950fbf1e93037": {
+      "toolchain": "toolchain",
+      "abi": "x86",
+      "artifactName": "ContinuousBuild"
+    },
+    "ContinuousConfigure::@8d044d8950fbf1e93037": {
+      "toolchain": "toolchain",
+      "abi": "x86",
+      "artifactName": "ContinuousConfigure"
+    },
+    "ContinuousCoverage::@8d044d8950fbf1e93037": {
+      "toolchain": "toolchain",
+      "abi": "x86",
+      "artifactName": "ContinuousCoverage"
+    },
+    "ContinuousMemCheck::@8d044d8950fbf1e93037": {
+      "toolchain": "toolchain",
+      "abi": "x86",
+      "artifactName": "ContinuousMemCheck"
+    },
+    "ContinuousStart::@8d044d8950fbf1e93037": {
+      "toolchain": "toolchain",
+      "abi": "x86",
+      "artifactName": "ContinuousStart"
+    },
+    "ContinuousSubmit::@8d044d8950fbf1e93037": {
+      "toolchain": "toolchain",
+      "abi": "x86",
+      "artifactName": "ContinuousSubmit"
+    },
+    "ContinuousTest::@8d044d8950fbf1e93037": {
+      "toolchain": "toolchain",
+      "abi": "x86",
+      "artifactName": "ContinuousTest"
+    },
+    "ContinuousUpdate::@8d044d8950fbf1e93037": {
+      "toolchain": "toolchain",
+      "abi": "x86",
+      "artifactName": "ContinuousUpdate"
+    },
+    "Experimental::@8d044d8950fbf1e93037": {
+      "toolchain": "toolchain",
+      "abi": "x86",
+      "artifactName": "Experimental"
+    },
+    "ExperimentalBuild::@8d044d8950fbf1e93037": {
+      "toolchain": "toolchain",
+      "abi": "x86",
+      "artifactName": "ExperimentalBuild"
+    },
+    "ExperimentalConfigure::@8d044d8950fbf1e93037": {
+      "toolchain": "toolchain",
+      "abi": "x86",
+      "artifactName": "ExperimentalConfigure"
+    },
+    "ExperimentalCoverage::@8d044d8950fbf1e93037": {
+      "toolchain": "toolchain",
+      "abi": "x86",
+      "artifactName": "ExperimentalCoverage"
+    },
+    "ExperimentalMemCheck::@8d044d8950fbf1e93037": {
+      "toolchain": "toolchain",
+      "abi": "x86",
+      "artifactName": "ExperimentalMemCheck"
+    },
+    "ExperimentalStart::@8d044d8950fbf1e93037": {
+      "toolchain": "toolchain",
+      "abi": "x86",
+      "artifactName": "ExperimentalStart"
+    },
+    "ExperimentalSubmit::@8d044d8950fbf1e93037": {
+      "toolchain": "toolchain",
+      "abi": "x86",
+      "artifactName": "ExperimentalSubmit"
+    },
+    "ExperimentalTest::@8d044d8950fbf1e93037": {
+      "toolchain": "toolchain",
+      "abi": "x86",
+      "artifactName": "ExperimentalTest"
+    },
+    "ExperimentalUpdate::@8d044d8950fbf1e93037": {
+      "toolchain": "toolchain",
+      "abi": "x86",
+      "artifactName": "ExperimentalUpdate"
+    },
+    "Nightly::@8d044d8950fbf1e93037": {
+      "toolchain": "toolchain",
+      "abi": "x86",
+      "artifactName": "Nightly"
+    },
+    "NightlyBuild::@8d044d8950fbf1e93037": {
+      "toolchain": "toolchain",
+      "abi": "x86",
+      "artifactName": "NightlyBuild"
+    },
+    "NightlyConfigure::@8d044d8950fbf1e93037": {
+      "toolchain": "toolchain",
+      "abi": "x86",
+      "artifactName": "NightlyConfigure"
+    },
+    "NightlyCoverage::@8d044d8950fbf1e93037": {
+      "toolchain": "toolchain",
+      "abi": "x86",
+      "artifactName": "NightlyCoverage"
+    },
+    "NightlyMemCheck::@8d044d8950fbf1e93037": {
+      "toolchain": "toolchain",
+      "abi": "x86",
+      "artifactName": "NightlyMemCheck"
+    },
+    "NightlyMemoryCheck::@8d044d8950fbf1e93037": {
+      "toolchain": "toolchain",
+      "abi": "x86",
+      "artifactName": "NightlyMemoryCheck"
+    },
+    "NightlyStart::@8d044d8950fbf1e93037": {
+      "toolchain": "toolchain",
+      "abi": "x86",
+      "artifactName": "NightlyStart"
+    },
+    "NightlySubmit::@8d044d8950fbf1e93037": {
+      "toolchain": "toolchain",
+      "abi": "x86",
+      "artifactName": "NightlySubmit"
+    },
+    "NightlyTest::@8d044d8950fbf1e93037": {
+      "toolchain": "toolchain",
+      "abi": "x86",
+      "artifactName": "NightlyTest"
+    },
+    "NightlyUpdate::@8d044d8950fbf1e93037": {
+      "toolchain": "toolchain",
+      "abi": "x86",
+      "artifactName": "NightlyUpdate"
+    },
+    "android_native_app_glue::@2e369c021ec05ea4235e": {
+      "toolchain": "toolchain",
+      "abi": "x86",
+      "artifactName": "android_native_app_glue"
+    },
+    "generate_openxr_header::@e05a1ba4ecef66fe83e3": {
+      "toolchain": "toolchain",
+      "abi": "x86",
+      "artifactName": "generate_openxr_header"
+    },
+    "openxr-gfxwrapper::@2e369c021ec05ea4235e": {
+      "toolchain": "toolchain",
+      "abi": "x86",
+      "artifactName": "openxr-gfxwrapper",
+      "output": "/Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86/openxr-sdk/src/libopenxr-gfxwrapper.a"
+    },
+    "openxr-glad-loader::@68c28e90068085cda7da": {
+      "toolchain": "toolchain",
+      "abi": "x86",
+      "artifactName": "openxr-glad-loader",
+      "output": "/Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86/openxr-sdk/src/external/glad2/libopenxr-glad-loader.a"
+    },
+    "openxr_loader::@13bac6780d56f8152eae": {
+      "toolchain": "toolchain",
+      "abi": "x86",
+      "artifactName": "openxr_loader",
+      "output": "/Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/build/intermediates/cxx/Debug/2v593h5z/obj/x86/libopenxr_loader.so",
+      "runtimeFiles": []
+    },
+    "quest_headpose_xr::@6890427a1f51a3e7e1df": {
+      "toolchain": "toolchain",
+      "abi": "x86",
+      "artifactName": "quest_headpose_xr",
+      "output": "/Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/build/intermediates/cxx/Debug/2v593h5z/obj/x86/libquest_headpose_xr.so",
+      "runtimeFiles": []
+    },
+    "uninstall::@8d044d8950fbf1e93037": {
+      "toolchain": "toolchain",
+      "abi": "x86",
+      "artifactName": "uninstall"
+    },
+    "xr_common_generated_files::@2e369c021ec05ea4235e": {
+      "toolchain": "toolchain",
+      "abi": "x86",
+      "artifactName": "xr_common_generated_files"
+    },
+    "xr_global_generated_files::@2e369c021ec05ea4235e": {
+      "toolchain": "toolchain",
+      "abi": "x86",
+      "artifactName": "xr_global_generated_files"
+    }
+  },
+  "toolchains": {
+    "toolchain": {
+      "cCompilerExecutable": "/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/bin/clang.lld",
+      "cppCompilerExecutable": "/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/bin/clang++.lld"
+    }
+  },
+  "cFileExtensions": [
+    "c"
+  ],
+  "cppFileExtensions": [
+    "cpp"
+  ]
+}

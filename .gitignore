@@ -1,0 +1,13 @@
+.DS_Store
+.gradle/
+.gradle-home/
+.kotlin/
+build/
+run/
+quest_headpose_app/.gradle/
+quest_headpose_app/.kotlin/
+quest_headpose_app/.cxx/
+quest_headpose_app/build/
+quest_headpose_app/app/build/
+quest_headpose_app/local.properties
+mac_receiver/.build/

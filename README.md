@@ -1,112 +1,130 @@
-# VR Input Bridge (ANY Game in VR)
+# Quest Headpose
 
-A prototype system that allows playing normal PC games in VR using a Meta Quest headset.
+`Quest Headpose` is a Quest 3S head-tracking window app plus a macOS receiver.
 
-## Overview
+- The Quest app shows connection state, OpenXR state, yaw, pitch, roll, receiver acknowledgement, local network info, and recenter controls.
+- The Quest app can enter a real OpenXR `NativeActivity` that renders a black immersive scene while headpose streaming continues.
+- The Mac receiver listens for UDP headpose packets and injects mouse movement only while the macOS cursor is hidden.
+- `dev.sh` is the stable command surface for building, installing, connecting, disconnecting, and changing sensitivity.
 
-The VR Input Bridge is an experimental project that converts standard PC games into a VR-like experience by:
+## Project Layout
 
-- Mapping headset movement to in-game camera/mouse movement
-- Injecting input directly into games when the cursor is hidden
-- Streaming the computer display to a Meta Quest headset
-- Creating a head-locked virtual screen for gameplay
+- `quest_headpose_app/`: Android Quest app titled `Quest Headpose`
+- `mac_receiver/`: Swift receiver binary
+- `dev.sh`: main terminal entrypoint
+- `scripts/quest_shortcut.sh`: Shortcuts-friendly wrapper
+- `config/quest_headpose.env`: shared runtime config
+- `third_party/openxr-sdk-source/`: vendored Khronos OpenXR SDK source used by the Quest native activity
 
-The goal is to make non-VR PC games playable in VR without requiring game mods.
+## Requirements
 
----
+- macOS with Accessibility enabled for your terminal app
+- Homebrew `android-platform-tools`
+- Homebrew `openjdk@17`
+- Android command-line SDK at `/opt/homebrew/share/android-commandlinetools` or `~/Library/Android/sdk`
+- Quest developer mode enabled
+- USB debugging accepted in-headset at least once
 
-## Current Status
+## Accessibility Permission
 
-This is an early prototype, but core systems are already working.
+The receiver can only inject mouse movement if macOS Accessibility is enabled for the process that launches it.
 
-### Working Features
+1. Open `System Settings`.
+2. Go to `Privacy & Security`.
+3. Open `Accessibility`.
+4. Enable `Terminal` and `Codex`.
 
-- Low-latency head tracking mapped to in-game camera movement
-- Quest to computer connection over local IP
-- Input injection system (active when mouse is hidden in-game)
-- Window capture and dynamic switching based on active window
-- PC to Quest streaming pipeline (sending side functional)
+## Commands
 
-### Work In Progress
+Run everything from:
 
-- Quest receiver (currently displays a static frame instead of live video)
-- Streaming performance and frame synchronization (currently low FPS on receiver)
-- Controller to keyboard/mouse input mapping
-- UI system (settings, sensitivity, remapping)
-- Stability and error handling
+```bash
+cd "/Users/marissameyer/Desktop/Games In VR"
+```
 
----
+Main commands:
 
-## Demo
+```bash
+./dev.sh detect_quest_ip
+./dev.sh build_quest_app
+./dev.sh install_quest_app
+./dev.sh connect
+./dev.sh disconnect
+./dev.sh set_sensitivity 18.0
+./dev.sh receiver_status
+```
 
-(Add your YouTube video link here)
+What each command does:
 
----
+- `detect_quest_ip`: reads the Quest Wi-Fi IP through ADB and writes it into `config/quest_headpose.env`
+- `build_quest_app`: builds the Quest APK with the vendored OpenXR native activity
+- `install_quest_app`: builds and installs the APK to the connected Quest
+- `connect`: connects wireless ADB, writes the current Mac IP into config, starts the Swift receiver in Terminal, and launches the Quest app with auto-connect arguments
+- `disconnect`: asks the app to disconnect, disconnects wireless ADB, and stops the Mac receiver
+- `set_sensitivity <float>`: updates the mouse sensitivity used by the receiver
+- `receiver_status`: reports whether the receiver is running
 
-## How It Works (High Level)
+## Typical Flow
 
-1. The Meta Quest headset sends head movement data over a local IP connection  
-2. The computer receives this data and converts it into camera/mouse input  
-3. Input is injected into games when the system detects a hidden cursor  
-4. The computer captures and streams the active window  
-5. The Quest displays the stream as a head-locked virtual screen  
+First-time or after a Quest reboot:
 
----
+```bash
+adb devices
+adb tcpip 5555
+./dev.sh detect_quest_ip
+./dev.sh install_quest_app
+./dev.sh connect
+```
 
-## Vision
+Daily use after that:
 
-The long-term goal is to create a system that allows:
+```bash
+./dev.sh connect
+```
 
-- Playing most PC games in VR without native support  
-- Controller-to-keyboard/mouse mapping  
-- Gesture-based inputs (e.g., swinging controllers for actions)  
-- Automatic window scaling and VR display optimization  
+Then in the headset:
 
----
+1. Open `Quest Headpose` if it is not already in front of you.
+2. Press `Connect`.
+3. Use `Enter OpenXR` to switch into the black immersive OpenXR activity.
+4. Press the Quest menu button to reopen the window UI while the immersive activity stays active.
+5. Use `Quit OpenXR` in the window UI when you want to leave immersive mode.
 
-## Platform Goals
+When you close the Quest app task, the background service disconnects automatically.
 
-- macOS (current prototype)
-- Windows (planned)
+## Config
 
----
+`config/quest_headpose.env` contains:
 
-## Downloads
+- `QUEST_IP`
+- `ADB_PORT`
+- `LISTEN_PORT`
+- `QUEST_PORT`
+- `SENSITIVITY`
+- `MAC_IP`
 
-Mac Receiver App:  
-https://github.com/coopermeyer465-prog/ANY-Game-in-VR/blob/main/downloads/Mac-Receiver.zip
+`./dev.sh connect` updates `MAC_IP` automatically. `./dev.sh detect_quest_ip` updates `QUEST_IP`.
 
-Quest App Installation:
+## Shortcuts App
 
-The Quest app is installed through the Mac receiver application.
+Create one Shortcut named `Quest Headpose Control` with one `Run Shell Script` action:
 
-- Connect the Quest headset via USB  
-- Launch the Mac receiver app  
-- Use the "Install Quest App" button  
+```bash
+/Users/marissameyer/Desktop/Games\ In\ VR/dev.sh shortcut
+```
 
----
+That menu currently exposes:
 
-## Collaboration
+- `Connect to Quest`
+- `Disconnect Quest`
+- `Detect Quest IP`
+- `Install Quest App`
+- `Change Head Movement Sensitivity`
 
-This project is currently a prototype, and I am looking for developers interested in helping turn it into a full product.
-
-Areas that would be especially useful:
-
-- VR development (Unity, OpenXR, Quest SDK)
-- Streaming and encoding optimization
-- Input systems (keyboard/mouse/game translation)
-- UI/UX development
-
-If you're interested, feel free to open an issue or reach out.
-
----
+If the internal terminal commands change later, keep using the same Shortcut entrypoint.
 
 ## Notes
 
-This is an experimental prototype and is not yet completely optimized or stable.
-
----
-
-## Project Goal
-
-Create a universal bridge between flat-screen games and VR.
+- The Quest build is intentionally `arm64-v8a` only because Quest hardware does not need the extra emulator ABIs.
+- The OpenXR immersive scene is intentionally black for now.
+- Headpose streaming still comes from the app service, so the Mac receiver keeps working in both the window UI and the OpenXR activity.

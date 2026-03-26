@@ -1,0 +1,43 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"install"
+		],
+		"files" : 
+		[
+			"/Users/marissameyer/Desktop/Games In VR/third_party/openxr-sdk-source/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 193,
+				"parent" : 0
+			}
+		]
+	},
+	"installers" : 
+	[
+		{
+			"backtrace" : 1,
+			"component" : "License",
+			"destination" : "share/doc/openxr",
+			"paths" : 
+			[
+				"/Users/marissameyer/Desktop/Games In VR/third_party/openxr-sdk-source/LICENSE"
+			],
+			"type" : "file"
+		}
+	],
+	"paths" : 
+	{
+		"build" : "openxr-sdk",
+		"source" : "/Users/marissameyer/Desktop/Games In VR/third_party/openxr-sdk-source"
+	}
+}

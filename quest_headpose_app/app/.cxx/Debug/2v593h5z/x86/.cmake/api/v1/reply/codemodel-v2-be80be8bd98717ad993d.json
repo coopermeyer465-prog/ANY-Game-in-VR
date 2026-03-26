@@ -1,0 +1,509 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"childIndexes" : 
+					[
+						1
+					],
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-.-Debug-f5ebdc15457944623624.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.6.0"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						33
+					]
+				},
+				{
+					"build" : "openxr-sdk",
+					"childIndexes" : 
+					[
+						2,
+						4
+					],
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-openxr-sdk-Debug-6feb5bf0a7a22c885c5d.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.16"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 1,
+					"source" : "/Users/marissameyer/Desktop/Games In VR/third_party/openxr-sdk-source",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						5,
+						6,
+						7,
+						8,
+						9,
+						10,
+						11,
+						12,
+						13,
+						14,
+						15,
+						16,
+						17,
+						18,
+						19,
+						20,
+						21,
+						22,
+						23,
+						24,
+						25,
+						26,
+						27,
+						34
+					]
+				},
+				{
+					"build" : "openxr-sdk/include",
+					"childIndexes" : 
+					[
+						3
+					],
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-openxr-sdk.include-Debug-821f503cfd30df4cd204.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.16"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 1,
+					"source" : "/Users/marissameyer/Desktop/Games In VR/third_party/openxr-sdk-source/include"
+				},
+				{
+					"build" : "openxr-sdk/include/openxr",
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-openxr-sdk.include.openxr-Debug-a0bc9281727bc3e040bb.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.16"
+					},
+					"parentIndex" : 2,
+					"projectIndex" : 1,
+					"source" : "/Users/marissameyer/Desktop/Games In VR/third_party/openxr-sdk-source/include/openxr",
+					"targetIndexes" : 
+					[
+						29
+					]
+				},
+				{
+					"build" : "openxr-sdk/src",
+					"childIndexes" : 
+					[
+						5,
+						6
+					],
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-openxr-sdk.src-Debug-755a9a1749ccbcd3d258.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.13"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 1,
+					"source" : "/Users/marissameyer/Desktop/Games In VR/third_party/openxr-sdk-source/src",
+					"targetIndexes" : 
+					[
+						28,
+						30,
+						35,
+						36
+					]
+				},
+				{
+					"build" : "openxr-sdk/src/external/glad2",
+					"jsonFile" : "directory-openxr-sdk.src.external.glad2-Debug-1d61dc9627ee9e309334.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.13"
+					},
+					"parentIndex" : 4,
+					"projectIndex" : 1,
+					"source" : "/Users/marissameyer/Desktop/Games In VR/third_party/openxr-sdk-source/src/external/glad2",
+					"targetIndexes" : 
+					[
+						31
+					]
+				},
+				{
+					"build" : "openxr-sdk/src/loader",
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-openxr-sdk.src.loader-Debug-225a42a0c38e376f982e.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.13"
+					},
+					"parentIndex" : 4,
+					"projectIndex" : 1,
+					"source" : "/Users/marissameyer/Desktop/Games In VR/third_party/openxr-sdk-source/src/loader",
+					"targetIndexes" : 
+					[
+						32
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"childIndexes" : 
+					[
+						1
+					],
+					"directoryIndexes" : 
+					[
+						0
+					],
+					"name" : "QuestHeadposeNative",
+					"targetIndexes" : 
+					[
+						33
+					]
+				},
+				{
+					"directoryIndexes" : 
+					[
+						1,
+						2,
+						3,
+						4,
+						5,
+						6
+					],
+					"name" : "OPENXR",
+					"parentIndex" : 0,
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						5,
+						6,
+						7,
+						8,
+						9,
+						10,
+						11,
+						12,
+						13,
+						14,
+						15,
+						16,
+						17,
+						18,
+						19,
+						20,
+						21,
+						22,
+						23,
+						24,
+						25,
+						26,
+						27,
+						28,
+						29,
+						30,
+						31,
+						32,
+						34,
+						35,
+						36
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 1,
+					"id" : "Continuous::@8d044d8950fbf1e93037",
+					"jsonFile" : "target-Continuous-Debug-5efa2a4b294a2ee31f52.json",
+					"name" : "Continuous",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "ContinuousBuild::@8d044d8950fbf1e93037",
+					"jsonFile" : "target-ContinuousBuild-Debug-68d035b7ab3501d0698c.json",
+					"name" : "ContinuousBuild",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "ContinuousConfigure::@8d044d8950fbf1e93037",
+					"jsonFile" : "target-ContinuousConfigure-Debug-567a686dde49807757b3.json",
+					"name" : "ContinuousConfigure",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "ContinuousCoverage::@8d044d8950fbf1e93037",
+					"jsonFile" : "target-ContinuousCoverage-Debug-a537b7f93208a3379c61.json",
+					"name" : "ContinuousCoverage",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "ContinuousMemCheck::@8d044d8950fbf1e93037",
+					"jsonFile" : "target-ContinuousMemCheck-Debug-263f6bfa244dd84d7cb1.json",
+					"name" : "ContinuousMemCheck",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "ContinuousStart::@8d044d8950fbf1e93037",
+					"jsonFile" : "target-ContinuousStart-Debug-60fdc93e689d58f8590e.json",
+					"name" : "ContinuousStart",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "ContinuousSubmit::@8d044d8950fbf1e93037",
+					"jsonFile" : "target-ContinuousSubmit-Debug-24198f35858ceb3027b2.json",
+					"name" : "ContinuousSubmit",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "ContinuousTest::@8d044d8950fbf1e93037",
+					"jsonFile" : "target-ContinuousTest-Debug-068786a40f1865183223.json",
+					"name" : "ContinuousTest",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "ContinuousUpdate::@8d044d8950fbf1e93037",
+					"jsonFile" : "target-ContinuousUpdate-Debug-d07caf4194d8f6853b30.json",
+					"name" : "ContinuousUpdate",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "Experimental::@8d044d8950fbf1e93037",
+					"jsonFile" : "target-Experimental-Debug-5f8ffa06d7167af830da.json",
+					"name" : "Experimental",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "ExperimentalBuild::@8d044d8950fbf1e93037",
+					"jsonFile" : "target-ExperimentalBuild-Debug-0cae572b63fba6270ffa.json",
+					"name" : "ExperimentalBuild",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "ExperimentalConfigure::@8d044d8950fbf1e93037",
+					"jsonFile" : "target-ExperimentalConfigure-Debug-c08ed18b5b571e8ff64c.json",
+					"name" : "ExperimentalConfigure",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "ExperimentalCoverage::@8d044d8950fbf1e93037",
+					"jsonFile" : "target-ExperimentalCoverage-Debug-55345ebe455ff888b077.json",
+					"name" : "ExperimentalCoverage",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "ExperimentalMemCheck::@8d044d8950fbf1e93037",
+					"jsonFile" : "target-ExperimentalMemCheck-Debug-98e40463da6e1bde5bee.json",
+					"name" : "ExperimentalMemCheck",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "ExperimentalStart::@8d044d8950fbf1e93037",
+					"jsonFile" : "target-ExperimentalStart-Debug-9c235fb893f662edff0f.json",
+					"name" : "ExperimentalStart",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "ExperimentalSubmit::@8d044d8950fbf1e93037",
+					"jsonFile" : "target-ExperimentalSubmit-Debug-bbd547da512895ee94c8.json",
+					"name" : "ExperimentalSubmit",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "ExperimentalTest::@8d044d8950fbf1e93037",
+					"jsonFile" : "target-ExperimentalTest-Debug-489bbf3c35859b1079ab.json",
+					"name" : "ExperimentalTest",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "ExperimentalUpdate::@8d044d8950fbf1e93037",
+					"jsonFile" : "target-ExperimentalUpdate-Debug-2c9e72b515940c52f383.json",
+					"name" : "ExperimentalUpdate",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "Nightly::@8d044d8950fbf1e93037",
+					"jsonFile" : "target-Nightly-Debug-73e0ac43b2038bff1246.json",
+					"name" : "Nightly",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "NightlyBuild::@8d044d8950fbf1e93037",
+					"jsonFile" : "target-NightlyBuild-Debug-5cbdd158858ae892e702.json",
+					"name" : "NightlyBuild",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "NightlyConfigure::@8d044d8950fbf1e93037",
+					"jsonFile" : "target-NightlyConfigure-Debug-92ecd3c82e5ef62a56a9.json",
+					"name" : "NightlyConfigure",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "NightlyCoverage::@8d044d8950fbf1e93037",
+					"jsonFile" : "target-NightlyCoverage-Debug-596c4dd8f7ca7cb756e7.json",
+					"name" : "NightlyCoverage",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "NightlyMemCheck::@8d044d8950fbf1e93037",
+					"jsonFile" : "target-NightlyMemCheck-Debug-62742edce2155071d4af.json",
+					"name" : "NightlyMemCheck",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "NightlyMemoryCheck::@8d044d8950fbf1e93037",
+					"jsonFile" : "target-NightlyMemoryCheck-Debug-6877374af5017064a395.json",
+					"name" : "NightlyMemoryCheck",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "NightlyStart::@8d044d8950fbf1e93037",
+					"jsonFile" : "target-NightlyStart-Debug-36b66181881b7fbd44c3.json",
+					"name" : "NightlyStart",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "NightlySubmit::@8d044d8950fbf1e93037",
+					"jsonFile" : "target-NightlySubmit-Debug-3bf494907d448a06ea97.json",
+					"name" : "NightlySubmit",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "NightlyTest::@8d044d8950fbf1e93037",
+					"jsonFile" : "target-NightlyTest-Debug-94441a285782e04496f2.json",
+					"name" : "NightlyTest",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "NightlyUpdate::@8d044d8950fbf1e93037",
+					"jsonFile" : "target-NightlyUpdate-Debug-920f32490045a78972f4.json",
+					"name" : "NightlyUpdate",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 4,
+					"id" : "android_native_app_glue::@2e369c021ec05ea4235e",
+					"jsonFile" : "target-android_native_app_glue-Debug-80ea68e9ee67e77043c3.json",
+					"name" : "android_native_app_glue",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 3,
+					"id" : "generate_openxr_header::@e05a1ba4ecef66fe83e3",
+					"jsonFile" : "target-generate_openxr_header-Debug-5b5a49063704739d7343.json",
+					"name" : "generate_openxr_header",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 4,
+					"id" : "openxr-gfxwrapper::@2e369c021ec05ea4235e",
+					"jsonFile" : "target-openxr-gfxwrapper-Debug-5eadb254347e36833343.json",
+					"name" : "openxr-gfxwrapper",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 5,
+					"id" : "openxr-glad-loader::@68c28e90068085cda7da",
+					"jsonFile" : "target-openxr-glad-loader-Debug-a655c4d8fafb596e76e4.json",
+					"name" : "openxr-glad-loader",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 6,
+					"id" : "openxr_loader::@13bac6780d56f8152eae",
+					"jsonFile" : "target-openxr_loader-Debug-8f3cec1575e99f345e15.json",
+					"name" : "openxr_loader",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "quest_headpose_xr::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-quest_headpose_xr-Debug-ef9fca058eaeadb3d989.json",
+					"name" : "quest_headpose_xr",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "uninstall::@8d044d8950fbf1e93037",
+					"jsonFile" : "target-uninstall-Debug-f6c6e72860356142b62f.json",
+					"name" : "uninstall",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 4,
+					"id" : "xr_common_generated_files::@2e369c021ec05ea4235e",
+					"jsonFile" : "target-xr_common_generated_files-Debug-5c89db56c05ddd166e3f.json",
+					"name" : "xr_common_generated_files",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 4,
+					"id" : "xr_global_generated_files::@2e369c021ec05ea4235e",
+					"jsonFile" : "target-xr_global_generated_files-Debug-c863d616d72bd99a53ae.json",
+					"name" : "xr_global_generated_files",
+					"projectIndex" : 1
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86",
+		"source" : "/Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/src/main/cpp"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 3
+	}
+}

@@ -1,0 +1,178 @@
+Performing C++ SOURCE FILE Test HAVE_FILESYSTEM_IN_STDEXPERIMENTAL failed with the following output:
+Change Dir: /Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/opt/homebrew/share/android-commandlinetools/cmake/3.22.1/bin/ninja cmTC_c4971 && [1/2] Building CXX object CMakeFiles/cmTC_c4971.dir/src.cxx.o
+FAILED: CMakeFiles/cmTC_c4971.dir/src.cxx.o 
+/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/bin/clang++ --target=i686-none-linux-android29 --sysroot=/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot -DHAVE_FILESYSTEM_IN_STDEXPERIMENTAL -I"/Users/marissameyer/Desktop/Games In VR/third_party/openxr-sdk-source/src/common" -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security   -DCMAKE_CXX_STANDARD=17 -DCMAKE_CXX_STANDARD_REQUIRED=TRUE -fPIC -std=gnu++17 -MD -MT CMakeFiles/cmTC_c4971.dir/src.cxx.o -MF CMakeFiles/cmTC_c4971.dir/src.cxx.o.d -o CMakeFiles/cmTC_c4971.dir/src.cxx.o -c '/Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86/CMakeFiles/CMakeTmp/src.cxx'
+/Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86/CMakeFiles/CMakeTmp/src.cxx:8:15: error: use of undeclared identifier 'is_regular_file'
+        (void)is_regular_file("/");
+              ^
+1 error generated.
+ninja: build stopped: subcommand failed.
+
+
+Source file was:
+#include <stdfs_conditions.h>
+    
+    #if defined(USE_EXPERIMENTAL_FS) && USE_EXPERIMENTAL_FS
+    #include <experimental/filesystem>
+    using namespace std::experimental::filesystem;
+    #endif
+    int main() {
+        (void)is_regular_file("/");
+        return 0;
+    }
+    
+    
+Performing C++ SOURCE FILE Test HAVE_FILESYSTEM_NEEDING_LIBSTDCXXFS failed with the following output:
+Change Dir: /Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/opt/homebrew/share/android-commandlinetools/cmake/3.22.1/bin/ninja cmTC_c2e48 && [1/2] Building CXX object CMakeFiles/cmTC_c2e48.dir/src.cxx.o
+[2/2] Linking CXX executable cmTC_c2e48
+FAILED: cmTC_c2e48 
+: && /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/bin/clang++ --target=i686-none-linux-android29 --sysroot=/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security -static-libstdc++ -Wl,--build-id=sha1 -Wl,--no-rosegment -Wl,--no-undefined-version -Wl,--fatal-warnings -Wl,--no-undefined -Qunused-arguments CMakeFiles/cmTC_c2e48.dir/src.cxx.o -o cmTC_c2e48  -lstdc++fs  -latomic -lm && :
+ld.lld: error: unable to find library -lstdc++fs
+clang++: error: linker command failed with exit code 1 (use -v to see invocation)
+ninja: build stopped: subcommand failed.
+
+
+Source file was:
+#include <stdfs_conditions.h>
+    
+    #if defined(USE_FINAL_FS) && USE_FINAL_FS
+    #include <filesystem>
+    using namespace std::filesystem;
+    #endif
+    #if defined(USE_EXPERIMENTAL_FS) && USE_EXPERIMENTAL_FS
+    #include <experimental/filesystem>
+    using namespace std::experimental::filesystem;
+    #endif
+    int main() {
+        (void)is_regular_file("/");
+        return 0;
+    }
+    
+    
+Performing C++ SOURCE FILE Test HAVE_FILESYSTEM_NEEDING_LIBCXXFS failed with the following output:
+Change Dir: /Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/opt/homebrew/share/android-commandlinetools/cmake/3.22.1/bin/ninja cmTC_1baf7 && [1/2] Building CXX object CMakeFiles/cmTC_1baf7.dir/src.cxx.o
+[2/2] Linking CXX executable cmTC_1baf7
+FAILED: cmTC_1baf7 
+: && /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/bin/clang++ --target=i686-none-linux-android29 --sysroot=/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security -static-libstdc++ -Wl,--build-id=sha1 -Wl,--no-rosegment -Wl,--no-undefined-version -Wl,--fatal-warnings -Wl,--no-undefined -Qunused-arguments CMakeFiles/cmTC_1baf7.dir/src.cxx.o -o cmTC_1baf7  -lc++fs  -latomic -lm && :
+ld.lld: error: unable to find library -lc++fs
+clang++: error: linker command failed with exit code 1 (use -v to see invocation)
+ninja: build stopped: subcommand failed.
+
+
+Source file was:
+#include <stdfs_conditions.h>
+    
+    #if defined(USE_FINAL_FS) && USE_FINAL_FS
+    #include <filesystem>
+    using namespace std::filesystem;
+    #endif
+    #if defined(USE_EXPERIMENTAL_FS) && USE_EXPERIMENTAL_FS
+    #include <experimental/filesystem>
+    using namespace std::experimental::filesystem;
+    #endif
+    int main() {
+        (void)is_regular_file("/");
+        return 0;
+    }
+    
+    
+Performing C SOURCE FILE Test CMAKE_HAVE_LIBC_PTHREAD failed with the following output:
+Change Dir: /Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/opt/homebrew/share/android-commandlinetools/cmake/3.22.1/bin/ninja cmTC_1d25e && [1/2] Building C object CMakeFiles/cmTC_1d25e.dir/src.c.o
+FAILED: CMakeFiles/cmTC_1d25e.dir/src.c.o 
+/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/bin/clang --target=i686-none-linux-android29 --sysroot=/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot -DCMAKE_HAVE_LIBC_PTHREAD  -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security   -fPIE -MD -MT CMakeFiles/cmTC_1d25e.dir/src.c.o -MF CMakeFiles/cmTC_1d25e.dir/src.c.o.d -o CMakeFiles/cmTC_1d25e.dir/src.c.o -c '/Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86/CMakeFiles/CMakeTmp/src.c'
+/Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86/CMakeFiles/CMakeTmp/src.c:13:3: error: call to undeclared function 'pthread_cancel'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
+  pthread_cancel(thread);
+  ^
+/Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86/CMakeFiles/CMakeTmp/src.c:13:3: note: did you mean 'pthread_once'?
+/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/include/pthread.h:258:5: note: 'pthread_once' declared here
+int pthread_once(pthread_once_t* _Nonnull __once, void (* _Nonnull __init_routine)(void));
+    ^
+1 error generated.
+ninja: build stopped: subcommand failed.
+
+
+Source file was:
+#include <pthread.h>
+
+static void* test_func(void* data)
+{
+  return data;
+}
+
+int main(void)
+{
+  pthread_t thread;
+  pthread_create(&thread, NULL, test_func, NULL);
+  pthread_detach(thread);
+  pthread_cancel(thread);
+  pthread_join(thread, NULL);
+  pthread_atfork(NULL, NULL, NULL);
+  pthread_exit(NULL);
+
+  return 0;
+}
+
+Determining if the function pthread_create exists in the pthreads failed with the following output:
+Change Dir: /Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/opt/homebrew/share/android-commandlinetools/cmake/3.22.1/bin/ninja cmTC_4d484 && [1/2] Building C object CMakeFiles/cmTC_4d484.dir/CheckFunctionExists.c.o
+[2/2] Linking C executable cmTC_4d484
+FAILED: cmTC_4d484 
+: && /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/bin/clang --target=i686-none-linux-android29 --sysroot=/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -DCHECK_FUNCTION_EXISTS=pthread_create -static-libstdc++ -Wl,--build-id=sha1 -Wl,--no-rosegment -Wl,--no-undefined-version -Wl,--fatal-warnings -Wl,--no-undefined -Qunused-arguments CMakeFiles/cmTC_4d484.dir/CheckFunctionExists.c.o -o cmTC_4d484  -lpthreads  -latomic -lm && :
+ld.lld: error: unable to find library -lpthreads
+clang: error: linker command failed with exit code 1 (use -v to see invocation)
+ninja: build stopped: subcommand failed.
+
+
+
+Determining if the function pthread_create exists in the pthread failed with the following output:
+Change Dir: /Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/opt/homebrew/share/android-commandlinetools/cmake/3.22.1/bin/ninja cmTC_bf9fb && [1/2] Building C object CMakeFiles/cmTC_bf9fb.dir/CheckFunctionExists.c.o
+[2/2] Linking C executable cmTC_bf9fb
+FAILED: cmTC_bf9fb 
+: && /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/bin/clang --target=i686-none-linux-android29 --sysroot=/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -DCHECK_FUNCTION_EXISTS=pthread_create -static-libstdc++ -Wl,--build-id=sha1 -Wl,--no-rosegment -Wl,--no-undefined-version -Wl,--fatal-warnings -Wl,--no-undefined -Qunused-arguments CMakeFiles/cmTC_bf9fb.dir/CheckFunctionExists.c.o -o cmTC_bf9fb  -lpthread  -latomic -lm && :
+ld.lld: error: unable to find library -lpthread
+clang: error: linker command failed with exit code 1 (use -v to see invocation)
+ninja: build stopped: subcommand failed.
+
+
+
+Determining if the function secure_getenv exists failed with the following output:
+Change Dir: /Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/opt/homebrew/share/android-commandlinetools/cmake/3.22.1/bin/ninja cmTC_56bd5 && [1/2] Building C object CMakeFiles/cmTC_56bd5.dir/CheckFunctionExists.c.o
+[2/2] Linking C executable cmTC_56bd5
+FAILED: cmTC_56bd5 
+: && /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/bin/clang --target=i686-none-linux-android29 --sysroot=/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -DCHECK_FUNCTION_EXISTS=secure_getenv -static-libstdc++ -Wl,--build-id=sha1 -Wl,--no-rosegment -Wl,--no-undefined-version -Wl,--fatal-warnings -Wl,--no-undefined -Qunused-arguments CMakeFiles/cmTC_56bd5.dir/CheckFunctionExists.c.o -o cmTC_56bd5  -latomic -lm && :
+ld.lld: error: undefined symbol: secure_getenv
+>>> referenced by CheckFunctionExists.c:17 (/opt/homebrew/share/android-commandlinetools/cmake/3.22.1/share/cmake-3.22/Modules/CheckFunctionExists.c:17)
+>>>               CMakeFiles/cmTC_56bd5.dir/CheckFunctionExists.c.o:(main)
+clang: error: linker command failed with exit code 1 (use -v to see invocation)
+ninja: build stopped: subcommand failed.
+
+
+
+Determining if the function __secure_getenv exists failed with the following output:
+Change Dir: /Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/opt/homebrew/share/android-commandlinetools/cmake/3.22.1/bin/ninja cmTC_14e64 && [1/2] Building C object CMakeFiles/cmTC_14e64.dir/CheckFunctionExists.c.o
+[2/2] Linking C executable cmTC_14e64
+FAILED: cmTC_14e64 
+: && /opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/bin/clang --target=i686-none-linux-android29 --sysroot=/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/sysroot -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -DCHECK_FUNCTION_EXISTS=__secure_getenv -static-libstdc++ -Wl,--build-id=sha1 -Wl,--no-rosegment -Wl,--no-undefined-version -Wl,--fatal-warnings -Wl,--no-undefined -Qunused-arguments CMakeFiles/cmTC_14e64.dir/CheckFunctionExists.c.o -o cmTC_14e64  -latomic -lm && :
+ld.lld: error: undefined symbol: __secure_getenv
+>>> referenced by CheckFunctionExists.c:17 (/opt/homebrew/share/android-commandlinetools/cmake/3.22.1/share/cmake-3.22/Modules/CheckFunctionExists.c:17)
+>>>               CMakeFiles/cmTC_14e64.dir/CheckFunctionExists.c.o:(main)
+clang: error: linker command failed with exit code 1 (use -v to see invocation)
+ninja: build stopped: subcommand failed.
+
+
+

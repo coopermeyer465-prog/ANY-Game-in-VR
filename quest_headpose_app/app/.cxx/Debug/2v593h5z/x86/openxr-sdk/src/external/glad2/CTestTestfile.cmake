@@ -1,0 +1,6 @@
+# CMake generated Testfile for 
+# Source directory: /Users/marissameyer/Desktop/Games In VR/third_party/openxr-sdk-source/src/external/glad2
+# Build directory: /Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86/openxr-sdk/src/external/glad2
+# 
+# This file includes the relevant testing commands required for 
+# testing this directory and lists subdirectories to be tested as well.

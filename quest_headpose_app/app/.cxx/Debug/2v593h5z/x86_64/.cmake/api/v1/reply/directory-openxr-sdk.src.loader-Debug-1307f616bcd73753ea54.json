@@ -1,0 +1,106 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"install"
+		],
+		"files" : 
+		[
+			"/Users/marissameyer/Desktop/Games In VR/third_party/openxr-sdk-source/src/loader/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 324,
+				"parent" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 439,
+				"parent" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 462,
+				"parent" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 482,
+				"parent" : 0
+			}
+		]
+	},
+	"installers" : 
+	[
+		{
+			"backtrace" : 1,
+			"component" : "Unspecified",
+			"destination" : "lib/pkgconfig",
+			"paths" : 
+			[
+				"/Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86_64/openxr-sdk/src/loader/openxr.pc"
+			],
+			"type" : "file"
+		},
+		{
+			"backtrace" : 2,
+			"component" : "Loader",
+			"destination" : "lib",
+			"paths" : 
+			[
+				"/Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/build/intermediates/cxx/Debug/2v593h5z/obj/x86_64/libopenxr_loader.so"
+			],
+			"targetId" : "openxr_loader::@13bac6780d56f8152eae",
+			"targetIndex" : 32,
+			"type" : "target"
+		},
+		{
+			"backtrace" : 3,
+			"component" : "CMakeConfigs",
+			"destination" : "lib/cmake/openxr",
+			"exportName" : "openxr_loader_export",
+			"exportTargets" : 
+			[
+				{
+					"id" : "openxr_loader::@13bac6780d56f8152eae",
+					"index" : 32
+				},
+				{
+					"id" : "headers::@e05a1ba4ecef66fe83e3",
+					"index" : 0
+				}
+			],
+			"paths" : 
+			[
+				"openxr-sdk/src/loader/CMakeFiles/Export/lib/cmake/openxr/OpenXRTargets.cmake"
+			],
+			"type" : "export"
+		},
+		{
+			"backtrace" : 4,
+			"component" : "CMakeConfigs",
+			"destination" : "lib/cmake/openxr",
+			"paths" : 
+			[
+				"/Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86_64/openxr-sdk/src/loader/OpenXRConfig.cmake",
+				"/Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/x86_64/openxr-sdk/src/loader/OpenXRConfigVersion.cmake"
+			],
+			"type" : "file"
+		}
+	],
+	"paths" : 
+	{
+		"build" : "openxr-sdk/src/loader",
+		"source" : "/Users/marissameyer/Desktop/Games In VR/third_party/openxr-sdk-source/src/loader"
+	}
+}
