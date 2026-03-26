@@ -1,7 +1,0 @@
-/Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/src/main/cpp/CMakeLists.txt
-/Users/marissameyer/Desktop/Games In VR/third_party/openxr-sdk-source/CMakeLists.txt
-/Users/marissameyer/Desktop/Games In VR/third_party/openxr-sdk-source/include/CMakeLists.txt
-/Users/marissameyer/Desktop/Games In VR/third_party/openxr-sdk-source/include/openxr/CMakeLists.txt
-/Users/marissameyer/Desktop/Games In VR/third_party/openxr-sdk-source/src/CMakeLists.txt
-/Users/marissameyer/Desktop/Games In VR/third_party/openxr-sdk-source/src/external/glad2/CMakeLists.txt
-/Users/marissameyer/Desktop/Games In VR/third_party/openxr-sdk-source/src/loader/CMakeLists.txt

@@ -1,6 +1,0 @@
-# CMake generated Testfile for 
-# Source directory: /Users/marissameyer/Desktop/Games In VR/third_party/openxr-sdk-source/include/openxr
-# Build directory: /Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/.cxx/Debug/2v593h5z/armeabi-v7a/openxr-sdk/include/openxr
-# 
-# This file includes the relevant testing commands required for 
-# testing this directory and lists subdirectories to be tested as well.
