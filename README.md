@@ -2,10 +2,10 @@
 
 `Quest Headpose` is a Quest 3S head-tracking window app plus a macOS receiver.
 
-- The Quest app shows connection state, OpenXR state, yaw, pitch, roll, receiver acknowledgement, local network info, and recenter controls.
-- The Quest app can enter a real OpenXR `NativeActivity` that renders a black immersive scene while headpose streaming continues.
+- The Quest app is a wide Android window app with connect, disconnect, recenter, and immersive controls.
+- The Quest app can launch a native OpenXR immersive mode that currently renders a black scene.
 - The Mac receiver listens for UDP headpose packets and injects mouse movement only while the macOS cursor is hidden.
-- `dev.sh` is the stable command surface for building, installing, connecting, disconnecting, and changing sensitivity.
+- `dev.sh` is the main terminal entrypoint for build, install, connect, disconnect, and sensitivity changes.
 
 ## Project Layout
 
@@ -48,6 +48,7 @@ Main commands:
 ./dev.sh detect_quest_ip
 ./dev.sh build_quest_app
 ./dev.sh install_quest_app
+./scripts/run_receiver.sh
 ./dev.sh connect
 ./dev.sh disconnect
 ./dev.sh set_sensitivity 18.0
@@ -59,14 +60,47 @@ What each command does:
 - `detect_quest_ip`: reads the Quest Wi-Fi IP through ADB and writes it into `config/quest_headpose.env`
 - `build_quest_app`: builds the Quest APK with the vendored OpenXR native activity
 - `install_quest_app`: builds and installs the APK to the connected Quest
+- `./scripts/run_receiver.sh`: starts the macOS UDP receiver in Terminal
 - `connect`: connects wireless ADB, writes the current Mac IP into config, starts the Swift receiver in Terminal, and launches the Quest app with auto-connect arguments
 - `disconnect`: asks the app to disconnect, disconnects wireless ADB, and stops the Mac receiver
 - `set_sensitivity <float>`: updates the mouse sensitivity used by the receiver
 - `receiver_status`: reports whether the receiver is running
 
+## Receiver
+
+Build once if needed:
+
+```bash
+swift build --package-path mac_receiver
+```
+
+Run the receiver:
+
+```bash
+./scripts/run_receiver.sh
+```
+
+The receiver needs macOS Accessibility permission through `System Settings` -> `Privacy & Security` -> `Accessibility`.
+
+## Install Or Update The Quest App
+
+Over USB:
+
+```bash
+adb devices
+adb -s 340YC10G9B0S11 install -r "quest_headpose_app/app/build/outputs/apk/debug/app-debug.apk"
+```
+
+Over wireless ADB:
+
+```bash
+adb connect 192.168.0.63:5555
+./dev.sh install_quest_app
+```
+
 ## Typical Flow
 
-First-time or after a Quest reboot:
+First-time setup or after a Quest reboot:
 
 ```bash
 adb devices
@@ -86,9 +120,9 @@ Then in the headset:
 
 1. Open `Quest Headpose` if it is not already in front of you.
 2. Press `Connect`.
-3. Use `Enter OpenXR` to switch into the black immersive OpenXR activity.
+3. Use `Enter Immersive` to switch into the black immersive OpenXR activity.
 4. Press the Quest menu button to reopen the window UI while the immersive activity stays active.
-5. Use `Quit OpenXR` in the window UI when you want to leave immersive mode.
+5. Use `Quit Immersive` in the window UI when you want to leave immersive mode.
 
 When you close the Quest app task, the background service disconnects automatically.
 
@@ -121,10 +155,11 @@ That menu currently exposes:
 - `Install Quest App`
 - `Change Head Movement Sensitivity`
 
-If the internal terminal commands change later, keep using the same Shortcut entrypoint.
+If the internal terminal commands change later, keep using the same Shortcut entrypoint and update the shortcut only if a new action is added.
 
 ## Notes
 
 - The Quest build is intentionally `arm64-v8a` only because Quest hardware does not need the extra emulator ABIs.
 - The OpenXR immersive scene is intentionally black for now.
 - Headpose streaming still comes from the app service, so the Mac receiver keeps working in both the window UI and the OpenXR activity.
+- The live command list is also kept in [QUEST_HEADPOSE_COMMANDS.md](/Users/marissameyer/Desktop/Games%20In%20VR/QUEST_HEADPOSE_COMMANDS.md).

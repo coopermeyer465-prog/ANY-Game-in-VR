@@ -1,5 +1,6 @@
 <resources>
-    <color name="quest_bg">#101418</color>
-    <color name="quest_fg">#F1F5F9</color>
-    <color name="quest_accent">#4ADE80</color>
+    <color name="quest_bg">#000000</color>
+    <color name="quest_fg">#FFFFFF</color>
+    <color name="quest_fg_muted">#B8B8B8</color>
+    <color name="quest_accent">#FFFFFF</color>
 </resources>

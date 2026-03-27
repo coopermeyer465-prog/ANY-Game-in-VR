@@ -8,6 +8,8 @@ import android.content.IntentFilter
 import android.os.Bundle
 
 class OpenXrActivity : NativeActivity() {
+    private var reopenedWindowFromSystemUi = false
+
     private val closeReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             finish()
@@ -25,9 +27,15 @@ class OpenXrActivity : NativeActivity() {
         }
     }
 
-    override fun onPause() {
-        super.onPause()
-        if (!isFinishing) {
+    override fun onResume() {
+        super.onResume()
+        reopenedWindowFromSystemUi = false
+    }
+
+    override fun onUserLeaveHint() {
+        super.onUserLeaveHint()
+        if (!isFinishing && !reopenedWindowFromSystemUi) {
+            reopenedWindowFromSystemUi = true
             startActivity(
                 Intent(this, MainActivity::class.java)
                     .addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -69,10 +77,14 @@ class OpenXrActivity : NativeActivity() {
 
     companion object {
         private const val ACTION_CLOSE_OPENXR = "com.gamesinvr.questheadpose.CLOSE_OPENXR"
+        private const val ACTION_OPENXR = "com.gamesinvr.questheadpose.OPENXR"
+        private const val IMMERSIVE_HMD_CATEGORY = "org.khronos.openxr.intent.category.IMMERSIVE_HMD"
 
         fun launch(context: Context) {
             context.startActivity(
                 Intent(context, OpenXrActivity::class.java)
+                    .setAction(ACTION_OPENXR)
+                    .addCategory(IMMERSIVE_HMD_CATEGORY)
                     .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
             )
         }

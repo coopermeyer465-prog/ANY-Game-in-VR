@@ -1,18 +1,20 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <style name="Theme.QuestHeadpose" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+    <style name="Theme.QuestHeadpose" parent="Theme.MaterialComponents.NoActionBar">
         <item name="colorPrimary">@color/quest_accent</item>
         <item name="colorOnPrimary">@android:color/black</item>
         <item name="android:statusBarColor">@color/quest_bg</item>
         <item name="android:navigationBarColor">@color/quest_bg</item>
         <item name="android:windowBackground">@color/quest_bg</item>
         <item name="android:textColorPrimary">@color/quest_fg</item>
-        <item name="android:textColorSecondary">#B4C1CC</item>
+        <item name="android:textColorSecondary">@color/quest_fg_muted</item>
         <item name="colorSurface">@color/quest_bg</item>
         <item name="colorOnSurface">@color/quest_fg</item>
-        <item name="materialButtonStyle">@style/Widget.MaterialComponents.Button</item>
+        <item name="colorControlNormal">@color/quest_fg</item>
+        <item name="colorAccent">@color/quest_fg</item>
+        <item name="materialButtonStyle">@style/Widget.QuestHeadpose.Button</item>
     </style>
 
-    <style name="Theme.QuestHeadpose.Immersive" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+    <style name="Theme.QuestHeadpose.Immersive" parent="Theme.MaterialComponents.NoActionBar">
         <item name="android:windowBackground">@android:color/black</item>
         <item name="android:statusBarColor">@android:color/black</item>
         <item name="android:navigationBarColor">@android:color/black</item>
@@ -22,5 +24,27 @@
         <item name="android:textColorPrimary">@android:color/black</item>
         <item name="colorSurface">@android:color/black</item>
         <item name="colorOnSurface">@android:color/black</item>
+    </style>
+
+    <style name="Widget.QuestHeadpose.Button" parent="Widget.MaterialComponents.Button.OutlinedButton">
+        <item name="android:textColor">@color/quest_fg</item>
+        <item name="backgroundTint">@color/quest_bg</item>
+        <item name="strokeColor">@color/quest_fg</item>
+        <item name="strokeWidth">1dp</item>
+        <item name="cornerRadius">12dp</item>
+        <item name="android:insetLeft">0dp</item>
+        <item name="android:insetRight">0dp</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+    </style>
+
+    <style name="Widget.QuestHeadpose.Button.Primary" parent="Widget.MaterialComponents.Button">
+        <item name="android:textColor">@android:color/black</item>
+        <item name="backgroundTint">@color/quest_fg</item>
+        <item name="cornerRadius">12dp</item>
+        <item name="android:insetLeft">0dp</item>
+        <item name="android:insetRight">0dp</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
     </style>
 </resources>

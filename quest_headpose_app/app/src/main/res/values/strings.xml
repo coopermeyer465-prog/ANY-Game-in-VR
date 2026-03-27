@@ -1,13 +1,14 @@
 <resources>
     <string name="app_name">Quest Headpose</string>
-    <string name="app_subtitle">Windowed headpose sender for Quest. Streams yaw and pitch to the Mac receiver and can enter a black immersive view.</string>
+    <string name="app_subtitle">Windowed Quest headpose sender with a black immersive view.</string>
+    <string name="receiver_title">Receiver</string>
     <string name="mac_ip_hint">MacBook receiver IP</string>
     <string name="mac_port_hint">MacBook receiver port</string>
     <string name="default_mac_port">7007</string>
     <string name="connect">Connect</string>
     <string name="disconnect">Disconnect</string>
     <string name="recenter">Recenter</string>
-    <string name="enter_immersive">Enter OpenXR</string>
-    <string name="quit_immersive">Quit OpenXR</string>
-    <string name="stats_title">Live Stats</string>
+    <string name="enter_immersive">Enter Immersive</string>
+    <string name="quit_immersive">Quit Immersive</string>
+    <string name="stats_title">Status</string>
 </resources>

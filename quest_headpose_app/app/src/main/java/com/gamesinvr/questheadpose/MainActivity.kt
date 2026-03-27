@@ -11,8 +11,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import kotlinx.coroutines.launch
 import java.text.DecimalFormat
-import java.text.SimpleDateFormat
-import java.util.Date
 import java.util.Locale
 
 class MainActivity : AppCompatActivity() {
@@ -25,7 +23,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var statusText: TextView
 
     private val decimal = DecimalFormat("0.00")
-    private val clock = SimpleDateFormat("HH:mm:ss", Locale.US)
     private var autoConnectRequested = false
     private var disconnectRequested = false
 
@@ -125,36 +122,24 @@ class MainActivity : AppCompatActivity() {
             getString(R.string.enter_immersive)
         }
 
-        val lastPacket = if (state.lastPacketAtMs > 0) {
-            clock.format(Date(state.lastPacketAtMs))
-        } else {
-            "never"
-        }
-        val lastAck = if (state.lastAckAtMs > 0) {
-            clock.format(Date(state.lastAckAtMs))
-        } else {
-            "never"
+        val connectionLabel = if (state.connected) "Connected" else "Idle"
+        val receiverLabel = if (state.receiverAcknowledged) "Receiver ready" else "Waiting for receiver"
+        val openXrLabel = when {
+            state.immersiveActive -> "Immersive active"
+            state.openXrStatus.startsWith("OpenXR error:", ignoreCase = true) -> state.openXrStatus
+            else -> "Ready"
         }
 
         statusText.text =
             """
-            Connection: ${if (state.connected) "connected" else "idle"}
-            Receiver ack: ${if (state.receiverAcknowledged) "yes" else "no"}
-            OpenXR: ${state.openXrStatus}
+            Connection: $connectionLabel
+            Receiver: $receiverLabel
+            OpenXR: $openXrLabel
             Sensor: ${state.sensorName}
-            Mac: ${state.macIp}:${state.macPort}
-            Quest IP: ${state.questIp.ifBlank { "unknown" }}
-            Local UDP port: ${state.localPort}
             Yaw: ${decimal.format(state.yaw)}
             Pitch: ${decimal.format(state.pitch)}
             Roll: ${decimal.format(state.roll)}
-            Yaw delta: ${decimal.format(state.yawVelocity)}
-            Pitch delta: ${decimal.format(state.pitchVelocity)}
-            Receiver sensitivity: ${decimal.format(state.sensitivity)}
-            Last sent: $lastPacket
-            Last ack: $lastAck
-            Last receiver message: ${state.lastAckMessage}
-            Immersive black view: ${if (state.immersiveActive) "active" else "off"}
+            Message: ${state.lastAckMessage}
             """.trimIndent()
     }
 }
