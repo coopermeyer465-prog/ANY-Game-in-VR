@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">Quest Headpose</string>
-    <string name="app_subtitle">Windowed Quest headpose sender with a black immersive view.</string>
+    <string name="app_subtitle">Windowed Quest headpose sender with a black OpenXR view.</string>
     <string name="receiver_title">Receiver</string>
     <string name="mac_ip_hint">MacBook receiver IP</string>
     <string name="mac_port_hint">MacBook receiver port</string>
@@ -8,8 +8,8 @@
     <string name="connect">Connect</string>
     <string name="disconnect">Disconnect</string>
     <string name="recenter">Recenter</string>
-    <string name="enter_immersive">Enter Immersive</string>
-    <string name="quit_immersive">Quit Immersive</string>
+    <string name="enter_immersive">Enter OpenXR</string>
+    <string name="quit_immersive">Exit OpenXR</string>
     <string name="stats_title">Status</string>
     <string name="sensitivity_title">Head Movement Sensitivity</string>
     <string name="sensitivity_value">Preset %1$d/%2$d  ·  %3$d</string>
