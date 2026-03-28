@@ -8,8 +8,6 @@ import android.content.IntentFilter
 import android.os.Bundle
 
 class OpenXrActivity : NativeActivity() {
-    private var reopenedWindowFromSystemUi = false
-
     private val closeReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             finish()
@@ -23,23 +21,6 @@ class OpenXrActivity : NativeActivity() {
             it.copy(
                 immersiveActive = true,
                 openXrStatus = "OpenXR activity launched; waiting for tracked pose",
-            )
-        }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        reopenedWindowFromSystemUi = false
-    }
-
-    override fun onUserLeaveHint() {
-        super.onUserLeaveHint()
-        if (!isFinishing && !reopenedWindowFromSystemUi) {
-            reopenedWindowFromSystemUi = true
-            startActivity(
-                Intent(this, MainActivity::class.java)
-                    .addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
-                    .putExtra("from_openxr", true),
             )
         }
     }
