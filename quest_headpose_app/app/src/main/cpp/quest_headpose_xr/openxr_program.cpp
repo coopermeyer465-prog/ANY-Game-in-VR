@@ -12,6 +12,7 @@
 #include "swapchain_image_data.h"
 #include "openxr_program.h"
 #include <common/xr_linear.h>
+#include <algorithm>
 #include <array>
 #include <cmath>
 #include <set>
@@ -87,6 +88,29 @@ inline XrReferenceSpaceCreateInfo GetXrReferenceSpaceCreateInfo(const std::strin
         throw std::invalid_argument(Fmt("Unknown reference space type '%s'", referenceSpaceTypeStr.c_str()));
     }
     return referenceSpaceCreateInfo;
+}
+
+struct EulerDegrees {
+    float yaw;
+    float pitch;
+    float roll;
+};
+
+inline EulerDegrees ToEulerDegrees(const XrQuaternionf& orientation) {
+    constexpr float kRadiansToDegrees = 57.2957795f;
+    const float x = orientation.x;
+    const float y = orientation.y;
+    const float z = orientation.z;
+    const float w = orientation.w;
+
+    const float yaw =
+        std::atan2(2.0f * (w * y + x * z), 1.0f - 2.0f * (y * y + z * z)) * kRadiansToDegrees;
+    const float pitch =
+        std::asin(std::clamp(2.0f * (w * x - z * y), -1.0f, 1.0f)) * kRadiansToDegrees;
+    const float roll =
+        std::atan2(2.0f * (w * z + x * y), 1.0f - 2.0f * (x * x + z * z)) * kRadiansToDegrees;
+
+    return {yaw, pitch, roll};
 }
 
 struct OpenXrProgram : IOpenXrProgram {
@@ -959,6 +983,16 @@ struct OpenXrProgram : IOpenXrProgram {
         CHECK_XRCMD(xrEndFrame(m_session, &frameEndInfo));
     }
 
+    bool TryGetHeadPose(float* yawDeg, float* pitchDeg, float* rollDeg) const override {
+        if (!m_hasHeadPose) {
+            return false;
+        }
+        *yawDeg = m_headYawDeg;
+        *pitchDeg = m_headPitchDeg;
+        *rollDeg = m_headRollDeg;
+        return true;
+    }
+
     bool RenderLayer(XrTime predictedDisplayTime, std::vector<XrCompositionLayerProjectionView>& projectionLayerViews,
                      std::vector<XrCompositionLayerDepthInfoKHR>& depthInfos, XrCompositionLayerProjection& layer) {
         XrResult res;
@@ -976,8 +1010,15 @@ struct OpenXrProgram : IOpenXrProgram {
         CHECK_XRRESULT(res, "xrLocateViews");
         if ((viewState.viewStateFlags & XR_VIEW_STATE_POSITION_VALID_BIT) == 0 ||
             (viewState.viewStateFlags & XR_VIEW_STATE_ORIENTATION_VALID_BIT) == 0) {
+            m_hasHeadPose = false;
             return false;  // There is no valid tracking poses for the views.
         }
+
+        const EulerDegrees headPose = ToEulerDegrees(m_views[0].pose.orientation);
+        m_headYawDeg = headPose.yaw;
+        m_headPitchDeg = headPose.pitch;
+        m_headRollDeg = headPose.roll;
+        m_hasHeadPose = true;
 
         CHECK(viewCountOutput == viewCapacityInput);
         CHECK(viewCountOutput == m_configViews.size());
@@ -1073,6 +1114,10 @@ struct OpenXrProgram : IOpenXrProgram {
 
     XrEventDataBuffer m_eventDataBuffer;
     InputState m_input;
+    bool m_hasHeadPose{false};
+    float m_headYawDeg{0.0f};
+    float m_headPitchDeg{0.0f};
+    float m_headRollDeg{0.0f};
 
     const std::set<XrEnvironmentBlendMode> m_acceptableBlendModes;
 };

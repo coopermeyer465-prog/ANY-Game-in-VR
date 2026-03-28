@@ -38,6 +38,9 @@ struct IOpenXrProgram {
     // Create and submit a frame.
     virtual void RenderFrame() = 0;
 
+    // Get the most recent tracked head pose in degrees.
+    virtual bool TryGetHeadPose(float* yawDeg, float* pitchDeg, float* rollDeg) const = 0;
+
     // Get preferred blend mode based on the view configuration specified in the Options
     virtual XrEnvironmentBlendMode GetPreferredBlendMode() const = 0;
 };

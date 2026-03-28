@@ -48,6 +48,17 @@ void NotifyOpenXrError(android_app* app, const std::string& message) {
     env->DeleteLocalRef(activityClass);
 }
 
+void NotifyOpenXrPose(android_app* app, float yaw, float pitch, float roll) {
+    JNIEnv* env = nullptr;
+    app->activity->vm->AttachCurrentThread(&env, nullptr);
+    jclass activityClass = env->GetObjectClass(app->activity->clazz);
+    jmethodID poseMethod = env->GetMethodID(activityClass, "onNativeOpenXrPose", "(FFF)V");
+    if (poseMethod != nullptr) {
+        env->CallVoidMethod(app->activity->clazz, poseMethod, yaw, pitch, roll);
+    }
+    env->DeleteLocalRef(activityClass);
+}
+
 #ifdef XR_USE_PLATFORM_ANDROID
 void ShowHelp() {
     Log::Write(Log::Level::Info, "adb shell setprop debug.xr.graphicsPlugin OpenGLES|Vulkan");
@@ -305,6 +316,12 @@ void android_main(struct android_app* app) {
 
             program->PollActions();
             program->RenderFrame();
+            float yaw = 0.0f;
+            float pitch = 0.0f;
+            float roll = 0.0f;
+            if (program->TryGetHeadPose(&yaw, &pitch, &roll)) {
+                NotifyOpenXrPose(app, yaw, pitch, roll);
+            }
         }
 
         app->activity->vm->DetachCurrentThread();

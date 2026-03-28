@@ -46,6 +46,7 @@ class OpenXrActivity : NativeActivity() {
 
     override fun onDestroy() {
         unregisterReceiver(closeReceiver)
+        OpenXrPoseBridge.clearPose()
         HeadposeRepository.update {
             it.copy(
                 immersiveActive = false,
@@ -64,7 +65,12 @@ class OpenXrActivity : NativeActivity() {
         }
     }
 
+    fun onNativeOpenXrPose(yaw: Float, pitch: Float, roll: Float) {
+        OpenXrPoseBridge.updatePose(yaw, pitch, roll)
+    }
+
     fun onNativeOpenXrError(message: String) {
+        OpenXrPoseBridge.clearPose()
         HeadposeRepository.update {
             it.copy(
                 immersiveActive = false,

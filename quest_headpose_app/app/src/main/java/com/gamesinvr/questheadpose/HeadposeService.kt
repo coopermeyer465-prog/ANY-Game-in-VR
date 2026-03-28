@@ -9,6 +9,7 @@ import android.hardware.SensorManager
 import android.os.Handler
 import android.os.HandlerThread
 import android.os.IBinder
+import android.os.SystemClock
 import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -43,6 +44,7 @@ class HeadposeService : Service(), SensorEventListener {
     private var socket: DatagramSocket? = null
     private var receiveJob: Job? = null
     private var handshakeJob: Job? = null
+    private var streamJob: Job? = null
     private var macAddress: InetAddress? = null
     private var macPort: Int = 7007
     private var yawOffset = 0f
@@ -67,6 +69,9 @@ class HeadposeService : Service(), SensorEventListener {
     private var directEulerYaw = 0f
     private var directEulerPitch = 0f
     private var directEulerRoll = 0f
+    @Volatile
+    private var latestSensorPose: TimedPose? = null
+    private var lastPoseSource = PoseSource.NONE
 
     override fun onCreate() {
         super.onCreate()
@@ -122,17 +127,6 @@ class HeadposeService : Service(), SensorEventListener {
             HeadposeRepository.update { it.copy(lastAckMessage = "Enter the Mac IP before connecting") }
             return
         }
-        if (sensor == null || poseSensorMode == PoseSensorMode.NONE) {
-            HeadposeRepository.update {
-                it.copy(
-                    connected = false,
-                    receiverAcknowledged = false,
-                    lastAckMessage = "No supported Quest head-tracking sensor found",
-                    sensorName = describeSensor(sensor, poseSensorMode),
-                )
-            }
-            return
-        }
 
         serviceScope.launch {
             disconnectInternal("Reconnecting", sendReason = false)
@@ -149,7 +143,6 @@ class HeadposeService : Service(), SensorEventListener {
                 rollOffset = 0f
                 lastYaw = 0f
                 lastPitch = 0f
-                lastSendNs = 0L
                 lastSensorTimestampNs = 0L
                 imuIntegratedYaw = 0f
                 imuIntegratedPitch = 0f
@@ -163,22 +156,26 @@ class HeadposeService : Service(), SensorEventListener {
                 directEulerYaw = 0f
                 directEulerPitch = 0f
                 directEulerRoll = 0f
+                latestSensorPose = null
+                lastPoseSource = PoseSource.NONE
                 cachedQuestIp = findQuestIp()
                 cachedSensorDescription = describeSensor(sensor, poseSensorMode)
 
-                val activeSensor = sensor ?: throw IllegalStateException("Pose sensor unavailable")
-                val registered = sensorManager.registerListener(
-                    this@HeadposeService,
-                    activeSensor,
-                    SensorManager.SENSOR_DELAY_GAME,
-                    sensorHandler,
-                )
-                if (!registered) {
-                    throw IllegalStateException("Could not register pose sensor listener")
+                sensor?.let { activeSensor ->
+                    val registered = sensorManager.registerListener(
+                        this@HeadposeService,
+                        activeSensor,
+                        SensorManager.SENSOR_DELAY_GAME,
+                        sensorHandler,
+                    )
+                    if (!registered) {
+                        Log.w(tag, "Could not register fallback pose sensor listener")
+                    }
                 }
 
                 startReceiveLoop(newSocket)
                 startHandshakeLoop(newSocket, resolvedMacAddress, port)
+                startPoseStreamLoop(newSocket, resolvedMacAddress, port)
                 HeadposeRepository.update {
                     it.copy(
                         connected = true,
@@ -188,7 +185,7 @@ class HeadposeService : Service(), SensorEventListener {
                         questIp = cachedQuestIp,
                         localPort = newSocket.localPort,
                         sensorName = cachedSensorDescription,
-                        lastAckMessage = "Connecting to receiver. Mouse movement only injects while the macOS cursor is hidden.",
+                        lastAckMessage = "Connecting to receiver. OpenXR tracked pose is preferred when immersive is active.",
                     )
                 }
                 sendPacket(buildHelloPayload(), resolvedMacAddress, port)
@@ -248,6 +245,22 @@ class HeadposeService : Service(), SensorEventListener {
         }
     }
 
+    private fun startPoseStreamLoop(
+        activeSocket: DatagramSocket,
+        resolvedMacAddress: InetAddress,
+        port: Int,
+    ) {
+        streamJob?.cancel()
+        streamJob = serviceScope.launch {
+            while (isActive && socket === activeSocket && !activeSocket.isClosed) {
+                resolveCurrentPose()?.let { pose ->
+                    sendCurrentPose(pose, activeSocket, resolvedMacAddress, port)
+                }
+                delay(11)
+            }
+        }
+    }
+
     private fun handleIncoming(raw: String) {
         val payload = JSONObject(raw)
         if (payload.optString("type") != "status") {
@@ -301,10 +314,14 @@ class HeadposeService : Service(), SensorEventListener {
         receiveJob = null
         handshakeJob?.cancel()
         handshakeJob = null
+        streamJob?.cancel()
+        streamJob = null
         activeSocket?.close()
         socket = null
         macAddress = null
         directEulerInitialized = false
+        latestSensorPose = null
+        lastPoseSource = PoseSource.NONE
         HeadposeRepository.update {
             it.copy(
                 connected = false,
@@ -320,6 +337,8 @@ class HeadposeService : Service(), SensorEventListener {
         yawOffset += current.yaw
         pitchOffset += current.pitch
         rollOffset += current.roll
+        lastYaw = 0f
+        lastPitch = 0f
         HeadposeRepository.update { it.copy(lastAckMessage = "Recentered at current head pose") }
         if (socket != null && macAddress != null) {
             sendPacketAsync(buildRecenterPayload())
@@ -348,6 +367,7 @@ class HeadposeService : Service(), SensorEventListener {
         sensorManager.unregisterListener(this)
         receiveJob?.cancel()
         handshakeJob?.cancel()
+        streamJob?.cancel()
         socket?.close()
         socket = null
         macAddress = null
@@ -367,73 +387,18 @@ class HeadposeService : Service(), SensorEventListener {
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onSensorChanged(event: SensorEvent?) {
-        val packetSocket = socket ?: return
-        val currentMac = macAddress ?: return
         val sensorEvent = event ?: return
         val values = sensorEvent.values ?: return
         val pose = decodePose(sensorEvent.sensor, values, sensorEvent.timestamp) ?: run {
             maybeReportUnsupportedSensor(sensorEvent.sensor, values)
             return
         }
-
-        val nowNs = System.nanoTime()
-        if (nowNs - lastSendNs < 16_000_000L) {
-            return
-        }
-        lastSendNs = nowNs
-
-        val yawDeg = pose.yaw - yawOffset
-        val pitchDeg = pose.pitch - pitchOffset
-        val rollDeg = pose.roll - rollOffset
-
-        val normalizedYaw = normalizeAngle(yawDeg)
-        val normalizedPitch = normalizeAngle(pitchDeg)
-        val normalizedRoll = normalizeAngle(rollDeg)
-        val yawDelta = normalizeAngle(normalizedYaw - lastYaw)
-        val pitchDelta = normalizeAngle(normalizedPitch - lastPitch)
-
-        lastYaw = normalizedYaw
-        lastPitch = normalizedPitch
-
-        if (cachedQuestIp.isBlank()) {
-            cachedQuestIp = findQuestIp()
-        }
-        val sensorDescription = cachedSensorDescription.ifBlank {
-            describeSensor(sensorEvent.sensor, poseSensorMode)
-        }
-        if (nowNs - lastUiUpdateNs >= 100_000_000L) {
-            lastUiUpdateNs = nowNs
-            HeadposeRepository.update { current ->
-                current.copy(
-                    yaw = normalizedYaw,
-                    pitch = normalizedPitch,
-                    roll = normalizedRoll,
-                    yawVelocity = yawDelta,
-                    pitchVelocity = pitchDelta,
-                    lastPacketAtMs = System.currentTimeMillis(),
-                    questIp = cachedQuestIp,
-                    localPort = packetSocket.localPort,
-                    sensorName = sensorDescription,
-                )
-            }
-        }
-
-        val currentState = HeadposeRepository.state.value
-        val payload = JSONObject()
-            .put("type", "headpose")
-            .put("mode", if (currentState.immersiveActive) "openxr" else "window")
-            .put("questIp", cachedQuestIp)
-            .put("questPort", packetSocket.localPort)
-            .put("sensitivity", currentState.sensitivity.toDouble())
-            .put("yaw", normalizedYaw.toDouble())
-            .put("pitch", normalizedPitch.toDouble())
-            .put("roll", normalizedRoll.toDouble())
-            .put("yawDelta", yawDelta.toDouble())
-            .put("pitchDelta", pitchDelta.toDouble())
-            .put("tsMs", System.currentTimeMillis())
-            .toString()
-
-        sendPacketAsync(payload, currentMac, macPort)
+        latestSensorPose = TimedPose(
+            pose = pose,
+            receivedAtNs = SystemClock.elapsedRealtimeNanos(),
+            source = PoseSource.SENSOR,
+            description = describeSensor(sensorEvent.sensor, poseSensorModeFor(sensorEvent.sensor)),
+        )
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) = Unit
@@ -455,13 +420,106 @@ class HeadposeService : Service(), SensorEventListener {
         }
     }
 
+    private fun resolveCurrentPose(): TimedPose? {
+        OpenXrPoseBridge.latestRecentPose(250_000_000L)?.let { openXrPose ->
+            return TimedPose(
+                pose = Pose(
+                    yaw = openXrPose.yaw,
+                    pitch = openXrPose.pitch,
+                    roll = openXrPose.roll,
+                ),
+                receivedAtNs = openXrPose.receivedAtNs,
+                source = PoseSource.OPENXR,
+                description = "OpenXR tracked head pose",
+            )
+        }
+
+        val fallbackPose = latestSensorPose ?: return null
+        return if (SystemClock.elapsedRealtimeNanos() - fallbackPose.receivedAtNs <= 250_000_000L) {
+            fallbackPose
+        } else {
+            null
+        }
+    }
+
+    private fun sendCurrentPose(
+        timedPose: TimedPose,
+        packetSocket: DatagramSocket,
+        currentMac: InetAddress,
+        port: Int,
+    ) {
+        val nowNs = SystemClock.elapsedRealtimeNanos()
+        val yawDeg = timedPose.pose.yaw - yawOffset
+        val pitchDeg = timedPose.pose.pitch - pitchOffset
+        val rollDeg = timedPose.pose.roll - rollOffset
+
+        val normalizedYaw = normalizeAngle(yawDeg)
+        val normalizedPitch = normalizeAngle(pitchDeg)
+        val normalizedRoll = normalizeAngle(rollDeg)
+
+        val sourceChanged = lastPoseSource != timedPose.source
+        val yawDelta = if (sourceChanged) 0f else normalizeAngle(normalizedYaw - lastYaw)
+        val pitchDelta = if (sourceChanged) 0f else normalizeAngle(normalizedPitch - lastPitch)
+
+        lastYaw = normalizedYaw
+        lastPitch = normalizedPitch
+        lastPoseSource = timedPose.source
+
+        if (cachedQuestIp.isBlank()) {
+            cachedQuestIp = findQuestIp()
+        }
+        cachedSensorDescription = timedPose.description
+        if (nowNs - lastUiUpdateNs >= 100_000_000L) {
+            lastUiUpdateNs = nowNs
+            HeadposeRepository.update { current ->
+                current.copy(
+                    yaw = normalizedYaw,
+                    pitch = normalizedPitch,
+                    roll = normalizedRoll,
+                    yawVelocity = yawDelta,
+                    pitchVelocity = pitchDelta,
+                    lastPacketAtMs = System.currentTimeMillis(),
+                    questIp = cachedQuestIp,
+                    localPort = packetSocket.localPort,
+                    sensorName = timedPose.description,
+                    openXrStatus = when {
+                        timedPose.source == PoseSource.OPENXR -> "OpenXR tracked head pose active"
+                        current.immersiveActive -> "OpenXR tracking unavailable"
+                        else -> current.openXrStatus
+                    },
+                )
+            }
+        }
+
+        val currentState = HeadposeRepository.state.value
+        val payload = JSONObject()
+            .put("type", "headpose")
+            .put("mode", if (timedPose.source == PoseSource.OPENXR) "openxr" else "window")
+            .put("questIp", cachedQuestIp)
+            .put("questPort", packetSocket.localPort)
+            .put("sensitivity", currentState.sensitivity.toDouble())
+            .put("yaw", normalizedYaw.toDouble())
+            .put("pitch", normalizedPitch.toDouble())
+            .put("roll", normalizedRoll.toDouble())
+            .put("yawDelta", yawDelta.toDouble())
+            .put("pitchDelta", pitchDelta.toDouble())
+            .put("tsMs", System.currentTimeMillis())
+            .toString()
+
+        try {
+            sendPacket(payload, currentMac, port)
+        } catch (_: Exception) {
+            // Best effort for live pose streaming.
+        }
+    }
+
     private fun buildHelloPayload(): String {
         val currentState = HeadposeRepository.state.value
         return JSONObject()
             .put("type", "hello")
             .put("questIp", cachedQuestIp.ifBlank { findQuestIp() })
             .put("questPort", socket?.localPort ?: currentState.localPort)
-            .put("sensor", cachedSensorDescription.ifBlank { currentState.sensorName })
+            .put("sensor", resolveCurrentPose()?.description ?: cachedSensorDescription.ifBlank { currentState.sensorName })
             .put("openxr", currentState.openXrStatus)
             .put("sensitivity", currentState.sensitivity.toDouble())
             .toString()
@@ -544,8 +602,8 @@ class HeadposeService : Service(), SensorEventListener {
         }
         return when (mode) {
             PoseSensorMode.NONE -> selectedSensor.name
-            PoseSensorMode.ROTATION_VECTOR -> "Rotation sensor"
-            PoseSensorMode.QUEST_IMU -> "HMD IMU"
+            PoseSensorMode.ROTATION_VECTOR -> "Rotation sensor fallback"
+            PoseSensorMode.QUEST_IMU -> "HMD IMU fallback"
         }
     }
 
@@ -754,6 +812,13 @@ class HeadposeService : Service(), SensorEventListener {
         val roll: Float,
     )
 
+    private data class TimedPose(
+        val pose: Pose,
+        val receivedAtNs: Long,
+        val source: PoseSource,
+        val description: String,
+    )
+
     private data class ImuSample(
         val gyro: FloatArray,
         val accel: FloatArray?,
@@ -770,6 +835,12 @@ class HeadposeService : Service(), SensorEventListener {
         NONE,
         ROTATION_VECTOR,
         QUEST_IMU,
+    }
+
+    private enum class PoseSource {
+        NONE,
+        SENSOR,
+        OPENXR,
     }
 
     companion object {

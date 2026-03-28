@@ -142,10 +142,6 @@ class Receiver:
         self.reload_requested = False
         self.filtered_dx = 0.0
         self.filtered_dy = 0.0
-        self.target_cursor_x = 0.0
-        self.target_cursor_y = 0.0
-        self.emitted_cursor_x = 0.0
-        self.emitted_cursor_y = 0.0
         self.last_cursor_visible = True
         self.last_packet_at = 0.0
         self.last_heartbeat_at = 0.0
@@ -256,7 +252,7 @@ class Receiver:
             dx = 0
             dy = 0
         else:
-            dx, dy = self.integrate_motion(raw_dx, raw_dy)
+            dx, dy = self.filter_motion(raw_dx, raw_dy)
             self.injector.inject(dx, dy)
         self.last_cursor_visible = cursor_visible
 
@@ -333,25 +329,19 @@ class Receiver:
             return 0.0
         adjusted = magnitude - deadzone_deg
         curved = adjusted ** self.config.response_exponent
-        return math.copysign(curved * (self.config.sensitivity * 0.1) * axis_scale, delta_deg)
+        return math.copysign(curved * (self.config.sensitivity * 0.02) * axis_scale, delta_deg)
 
-    def integrate_motion(self, raw_dx: float, raw_dy: float) -> tuple[int, int]:
+    def filter_motion(self, raw_dx: float, raw_dy: float) -> tuple[int, int]:
         alpha = max(0.0, min(1.0, self.config.smoothing_alpha))
         effective_raw_dx = 0.0 if abs(raw_dx) < self.config.deadzone_pixels else raw_dx
         effective_raw_dy = 0.0 if abs(raw_dy) < self.config.deadzone_pixels else raw_dy
-        self.target_cursor_x += effective_raw_dx
-        self.target_cursor_y += effective_raw_dy
-        self.filtered_dx = (1.0 - alpha) * self.filtered_dx + alpha * self.target_cursor_x
-        self.filtered_dy = (1.0 - alpha) * self.filtered_dy + alpha * self.target_cursor_y
+        self.filtered_dx = (1.0 - alpha) * self.filtered_dx + alpha * effective_raw_dx
+        self.filtered_dy = (1.0 - alpha) * self.filtered_dy + alpha * effective_raw_dy
 
-        desired_dx = self.filtered_dx - self.emitted_cursor_x
-        desired_dy = self.filtered_dy - self.emitted_cursor_y
-        clamped_dx = max(-self.config.max_step_pixels, min(self.config.max_step_pixels, desired_dx))
-        clamped_dy = max(-self.config.max_step_pixels, min(self.config.max_step_pixels, desired_dy))
+        clamped_dx = max(-self.config.max_step_pixels, min(self.config.max_step_pixels, self.filtered_dx))
+        clamped_dy = max(-self.config.max_step_pixels, min(self.config.max_step_pixels, self.filtered_dy))
         dx = self.quantize_axis(clamped_dx)
         dy = self.quantize_axis(clamped_dy)
-        self.emitted_cursor_x += dx
-        self.emitted_cursor_y += dy
         return dx, dy
 
     def quantize_axis(self, value: float) -> int:
@@ -360,17 +350,13 @@ class Receiver:
         rounded = int(round(value))
         if rounded == 0:
             return 0
-        if abs(rounded) < self.config.min_step_pixels:
+        if self.config.min_step_pixels > 0 and abs(rounded) < self.config.min_step_pixels:
             return int(math.copysign(self.config.min_step_pixels, rounded))
         return rounded
 
     def reset_motion_state(self) -> None:
         self.filtered_dx = 0.0
         self.filtered_dy = 0.0
-        self.target_cursor_x = 0.0
-        self.target_cursor_y = 0.0
-        self.emitted_cursor_x = 0.0
-        self.emitted_cursor_y = 0.0
 
 
 def main() -> int:
