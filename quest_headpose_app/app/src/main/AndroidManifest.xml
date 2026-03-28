@@ -73,7 +73,7 @@
             android:name=".HeadposeService"
             android:enabled="true"
             android:exported="false"
-            android:stopWithTask="true" />
+            android:stopWithTask="false" />
     </application>
 
 </manifest>

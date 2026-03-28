@@ -79,6 +79,7 @@ class MainActivity : AppCompatActivity() {
                 OpenXrActivity.closeActive(this)
             } else {
                 OpenXrActivity.launch(this)
+                finish()
             }
         }
 

@@ -34,6 +34,10 @@ class OpenXrActivity : NativeActivity() {
                 openXrStatus = "OpenXR inactive. Enter OpenXR to stream tracked head pose",
             )
         }
+        startActivity(
+            Intent(this, MainActivity::class.java)
+                .addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK),
+        )
         super.onDestroy()
     }
 
