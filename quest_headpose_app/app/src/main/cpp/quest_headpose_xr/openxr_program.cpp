@@ -1015,8 +1015,7 @@ struct OpenXrProgram : IOpenXrProgram {
         const XrResult res =
             xrLocateViews(m_session, &viewLocateInfo, &viewState, viewCapacityInput, &viewCountOutput, m_views.data());
         CHECK_XRRESULT(res, "xrLocateViews");
-        if ((viewState.viewStateFlags & XR_VIEW_STATE_POSITION_VALID_BIT) == 0 ||
-            (viewState.viewStateFlags & XR_VIEW_STATE_ORIENTATION_VALID_BIT) == 0 || viewCountOutput == 0) {
+        if ((viewState.viewStateFlags & XR_VIEW_STATE_ORIENTATION_VALID_BIT) == 0 || viewCountOutput == 0) {
             m_hasHeadPose = false;
             return false;
         }
@@ -1044,10 +1043,9 @@ struct OpenXrProgram : IOpenXrProgram {
 
         res = xrLocateViews(m_session, &viewLocateInfo, &viewState, viewCapacityInput, &viewCountOutput, m_views.data());
         CHECK_XRRESULT(res, "xrLocateViews");
-        if ((viewState.viewStateFlags & XR_VIEW_STATE_POSITION_VALID_BIT) == 0 ||
-            (viewState.viewStateFlags & XR_VIEW_STATE_ORIENTATION_VALID_BIT) == 0) {
+        if ((viewState.viewStateFlags & XR_VIEW_STATE_ORIENTATION_VALID_BIT) == 0 || viewCountOutput == 0) {
             m_hasHeadPose = false;
-            return false;  // There is no valid tracking poses for the views.
+            return false;  // There is no valid tracked orientation for the views.
         }
 
         const EulerDegrees headPose = ToEulerDegrees(m_views[0].pose.orientation);
@@ -1055,6 +1053,10 @@ struct OpenXrProgram : IOpenXrProgram {
         m_headPitchDeg = headPose.pitch;
         m_headRollDeg = headPose.roll;
         m_hasHeadPose = true;
+
+        if ((viewState.viewStateFlags & XR_VIEW_STATE_POSITION_VALID_BIT) == 0) {
+            return false;  // Keep pose streaming alive even if the runtime withholds a renderable position.
+        }
 
         CHECK(viewCountOutput == viewCapacityInput);
         CHECK(viewCountOutput == m_configViews.size());
