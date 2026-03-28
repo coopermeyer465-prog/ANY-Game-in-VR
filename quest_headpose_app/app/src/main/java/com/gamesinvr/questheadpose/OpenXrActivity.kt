@@ -6,8 +6,11 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
+import android.util.Log
 
 class OpenXrActivity : NativeActivity() {
+    private val tag = "QuestHeadpose"
+
     private val closeReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             finish()
@@ -52,6 +55,15 @@ class OpenXrActivity : NativeActivity() {
 
     fun onNativeOpenXrPose(yaw: Float, pitch: Float, roll: Float) {
         OpenXrPoseBridge.updatePose(yaw, pitch, roll)
+        Log.i(tag, "OpenXR pose callback yaw=$yaw pitch=$pitch roll=$roll")
+        HeadposeRepository.update {
+            it.copy(
+                yaw = yaw,
+                pitch = pitch,
+                roll = roll,
+                openXrStatus = "OpenXR pose callback active",
+            )
+        }
     }
 
     fun onNativeOpenXrError(message: String) {

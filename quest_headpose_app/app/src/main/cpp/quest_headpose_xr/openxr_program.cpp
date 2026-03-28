@@ -1003,6 +1003,15 @@ struct OpenXrProgram : IOpenXrProgram {
     }
 
     bool UpdateHeadPose(XrTime predictedDisplayTime) {
+        static auto lastStatusLogAt = std::chrono::steady_clock::time_point{};
+        const auto now = std::chrono::steady_clock::now();
+        const bool shouldLog =
+            lastStatusLogAt.time_since_epoch().count() == 0 ||
+            now - lastStatusLogAt >= std::chrono::seconds(1);
+        if (shouldLog) {
+            lastStatusLogAt = now;
+        }
+
         XrViewState viewState{XR_TYPE_VIEW_STATE};
         const uint32_t viewCapacityInput = (uint32_t)m_views.size();
         uint32_t viewCountOutput = 0;
@@ -1016,6 +1025,16 @@ struct OpenXrProgram : IOpenXrProgram {
             xrLocateViews(m_session, &viewLocateInfo, &viewState, viewCapacityInput, &viewCountOutput, m_views.data());
         CHECK_XRRESULT(res, "xrLocateViews");
         if ((viewState.viewStateFlags & XR_VIEW_STATE_ORIENTATION_VALID_BIT) == 0 || viewCountOutput == 0) {
+            if (shouldLog) {
+                Log::Write(
+                    Log::Level::Warning,
+                    Fmt(
+                        "UpdateHeadPose unavailable: viewStateFlags=0x%llx viewCount=%u",
+                        (unsigned long long)viewState.viewStateFlags,
+                        viewCountOutput
+                    )
+                );
+            }
             m_hasHeadPose = false;
             return false;
         }
@@ -1025,6 +1044,18 @@ struct OpenXrProgram : IOpenXrProgram {
         m_headPitchDeg = headPose.pitch;
         m_headRollDeg = headPose.roll;
         m_hasHeadPose = true;
+        if (shouldLog) {
+            Log::Write(
+                Log::Level::Info,
+                Fmt(
+                    "UpdateHeadPose ok: flags=0x%llx yaw=%.2f pitch=%.2f roll=%.2f",
+                    (unsigned long long)viewState.viewStateFlags,
+                    m_headYawDeg,
+                    m_headPitchDeg,
+                    m_headRollDeg
+                )
+            );
+        }
         return true;
     }
 

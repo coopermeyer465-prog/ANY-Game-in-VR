@@ -22,6 +22,17 @@ __declspec(dllexport) DWORD AmdPowerXpressRequestHighPerformance = 0x00000001;
 
 namespace {
 
+bool ShouldLogOncePerSecond() {
+    static auto lastLogAt = std::chrono::steady_clock::time_point{};
+    const auto now = std::chrono::steady_clock::now();
+    if (lastLogAt.time_since_epoch().count() == 0 ||
+        now - lastLogAt >= std::chrono::seconds(1)) {
+        lastLogAt = now;
+        return true;
+    }
+    return false;
+}
+
 void NotifyOpenXrReady(android_app* app, const std::string& message) {
     JNIEnv* env = nullptr;
     app->activity->vm->AttachCurrentThread(&env, nullptr);
@@ -53,8 +64,21 @@ void NotifyOpenXrPose(android_app* app, float yaw, float pitch, float roll) {
     app->activity->vm->AttachCurrentThread(&env, nullptr);
     jclass activityClass = env->GetObjectClass(app->activity->clazz);
     jmethodID poseMethod = env->GetMethodID(activityClass, "onNativeOpenXrPose", "(FFF)V");
-    if (poseMethod != nullptr) {
+    if (poseMethod == nullptr) {
+        Log::Write(Log::Level::Error, "onNativeOpenXrPose(float,float,float) method not found");
+        if (env->ExceptionCheck()) {
+            env->ExceptionDescribe();
+            env->ExceptionClear();
+        }
+    } else {
         env->CallVoidMethod(app->activity->clazz, poseMethod, yaw, pitch, roll);
+        if (env->ExceptionCheck()) {
+            Log::Write(Log::Level::Error, "Exception thrown while delivering OpenXR pose callback");
+            env->ExceptionDescribe();
+            env->ExceptionClear();
+        } else if (ShouldLogOncePerSecond()) {
+            Log::Write(Log::Level::Info, Fmt("Delivered OpenXR pose callback yaw=%.2f pitch=%.2f roll=%.2f", yaw, pitch, roll));
+        }
     }
     env->DeleteLocalRef(activityClass);
 }
@@ -321,6 +345,15 @@ void android_main(struct android_app* app) {
             float roll = 0.0f;
             if (program->TryGetHeadPose(&yaw, &pitch, &roll)) {
                 NotifyOpenXrPose(app, yaw, pitch, roll);
+            } else if (ShouldLogOncePerSecond()) {
+                Log::Write(
+                    Log::Level::Warning,
+                    Fmt(
+                        "TryGetHeadPose returned false while sessionRunning=%s focused=%s",
+                        program->IsSessionRunning() ? "true" : "false",
+                        program->IsSessionFocused() ? "true" : "false"
+                    )
+                );
             }
         }
 
