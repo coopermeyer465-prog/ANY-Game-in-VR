@@ -63,6 +63,10 @@ class HeadposeService : Service(), SensorEventListener {
     private var lastRawImuLogNs = 0L
     private var lastImuLayout = "unknown"
     private var questImuInterpretation = QuestImuInterpretation.AUTO
+    private var directEulerInitialized = false
+    private var directEulerYaw = 0f
+    private var directEulerPitch = 0f
+    private var directEulerRoll = 0f
 
     override fun onCreate() {
         super.onCreate()
@@ -163,6 +167,10 @@ class HeadposeService : Service(), SensorEventListener {
                 lastRawImuLogNs = 0L
                 lastImuLayout = "unknown"
                 questImuInterpretation = QuestImuInterpretation.AUTO
+                directEulerInitialized = false
+                directEulerYaw = 0f
+                directEulerPitch = 0f
+                directEulerRoll = 0f
                 cachedQuestIp = findQuestIp()
                 cachedSensorDescription = describeSensor(sensor, poseSensorMode)
 
@@ -306,6 +314,7 @@ class HeadposeService : Service(), SensorEventListener {
         activeSocket?.close()
         socket = null
         macAddress = null
+        directEulerInitialized = false
         HeadposeRepository.update {
             it.copy(
                 connected = false,
@@ -536,6 +545,11 @@ class HeadposeService : Service(), SensorEventListener {
         return normalized
     }
 
+    private fun blendAngle(previous: Float, target: Float, alpha: Float): Float {
+        val delta = normalizeAngle(target - previous)
+        return normalizeAngle(previous + delta * alpha)
+    }
+
     private fun selectPoseSensor(): Sensor? {
         val sensors = sensorManager.getSensorList(Sensor.TYPE_ALL)
         return sensors.firstOrNull { it.type == HEAD_TRACKER_TYPE }
@@ -662,10 +676,23 @@ class HeadposeService : Service(), SensorEventListener {
             return null
         }
         maybeLogRawDirectEuler(values)
+        val rawYaw = normalizeAngle(values[1])
+        val rawPitch = normalizeAngle(values[2])
+        val rawRoll = normalizeAngle(values[3])
+        if (!directEulerInitialized) {
+            directEulerYaw = rawYaw
+            directEulerPitch = rawPitch
+            directEulerRoll = rawRoll
+            directEulerInitialized = true
+        } else {
+            directEulerYaw = blendAngle(directEulerYaw, rawYaw, 0.22f)
+            directEulerPitch = blendAngle(directEulerPitch, rawPitch, 0.22f)
+            directEulerRoll = blendAngle(directEulerRoll, rawRoll, 0.22f)
+        }
         return Pose(
-            yaw = normalizeAngle(values[0]),
-            pitch = normalizeAngle(values[2]),
-            roll = normalizeAngle(values[3]),
+            yaw = directEulerYaw,
+            pitch = directEulerPitch,
+            roll = directEulerRoll,
         )
     }
 
@@ -678,7 +705,7 @@ class HeadposeService : Service(), SensorEventListener {
         val raw = values.joinToString(prefix = "[", postfix = "]", limit = 8) { "%.3f".format(it) }
         Log.i(
             tag,
-            "Direct Euler raw=$raw mappedYaw=${"%.3f".format(values[0])} mappedPitch=${"%.3f".format(values[2])} mappedRoll=${"%.3f".format(values[3])}",
+            "Direct Euler raw=$raw mappedYaw=${"%.3f".format(values[1])} mappedPitch=${"%.3f".format(values[2])} mappedRoll=${"%.3f".format(values[3])}",
         )
     }
 

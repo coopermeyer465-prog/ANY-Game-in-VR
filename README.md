@@ -37,66 +37,60 @@ The receiver cannot inject mouse movement without Accessibility permission.
 
 ## Main Commands
 
-Run everything from:
-
-```bash
-cd "/Users/marissameyer/Desktop/Games In VR"
-```
+Each command below finds the project folder first, then runs from there.
 
 Start the receiver:
 
 ```bash
-./scripts/run_receiver.sh
+cd "$(dirname "$(dirname "$(find "$HOME" -path '*/scripts/quest_shortcut.sh' -print -quit)")")" && ./scripts/run_receiver.sh
 ```
 
 Build the Quest app:
 
 ```bash
-./dev.sh build_quest_app
+cd "$(dirname "$(dirname "$(find "$HOME" -path '*/scripts/quest_shortcut.sh' -print -quit)")")" && ./dev.sh build_quest_app
 ```
 
 Install or update over USB:
 
 ```bash
-adb devices
-adb -s 340YC10G9B0S11 install -r "/Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/build/outputs/apk/debug/app-debug.apk"
+cd "$(dirname "$(dirname "$(find "$HOME" -path '*/scripts/quest_shortcut.sh' -print -quit)")")" && adb devices && adb -s "$(adb devices | awk 'NR>1 && $2==\"device\" {print $1; exit}')" install -r "$PWD/quest_headpose_app/app/build/outputs/apk/debug/app-debug.apk"
 ```
 
 Install or update over wireless ADB:
 
 ```bash
-adb connect 192.168.0.63:5555
-./dev.sh install_quest_app
+cd "$(dirname "$(dirname "$(find "$HOME" -path '*/scripts/quest_shortcut.sh' -print -quit)")")" && ./dev.sh detect_quest_ip && adb connect "$(sed -n 's/^QUEST_IP=//p' config/quest_headpose.env):5555" && ./dev.sh install_quest_app
 ```
 
 Connect the pipeline:
 
 ```bash
-./dev.sh connect
+cd "$(dirname "$(dirname "$(find "$HOME" -path '*/scripts/quest_shortcut.sh' -print -quit)")")" && ./dev.sh connect
 ```
 
 Disconnect:
 
 ```bash
-./dev.sh disconnect
+cd "$(dirname "$(dirname "$(find "$HOME" -path '*/scripts/quest_shortcut.sh' -print -quit)")")" && ./dev.sh disconnect
 ```
 
 Set receiver sensitivity from the Mac:
 
 ```bash
-./dev.sh set_sensitivity 240.0
+cd "$(dirname "$(dirname "$(find "$HOME" -path '*/scripts/quest_shortcut.sh' -print -quit)")")" && ./dev.sh set_sensitivity 240.0
 ```
 
 Detect the Quest IP:
 
 ```bash
-./dev.sh detect_quest_ip
+cd "$(dirname "$(dirname "$(find "$HOME" -path '*/scripts/quest_shortcut.sh' -print -quit)")")" && ./dev.sh detect_quest_ip
 ```
 
 Check receiver status:
 
 ```bash
-./dev.sh receiver_status
+cd "$(dirname "$(dirname "$(find "$HOME" -path '*/scripts/quest_shortcut.sh' -print -quit)")")" && ./dev.sh receiver_status
 ```
 
 ## Typical Flow
@@ -104,17 +98,13 @@ Check receiver status:
 After a full Quest reboot:
 
 ```bash
-adb devices
-adb tcpip 5555
-./dev.sh detect_quest_ip
-./dev.sh install_quest_app
-./dev.sh connect
+cd "$(dirname "$(dirname "$(find "$HOME" -path '*/scripts/quest_shortcut.sh' -print -quit)")")" && adb devices && adb tcpip 5555 && ./dev.sh detect_quest_ip && adb connect "$(sed -n 's/^QUEST_IP=//p' config/quest_headpose.env):5555" && ./dev.sh install_quest_app && ./dev.sh connect
 ```
 
 Normal use after wireless ADB is already active:
 
 ```bash
-./scripts/run_receiver.sh
+cd "$(dirname "$(dirname "$(find "$HOME" -path '*/scripts/quest_shortcut.sh' -print -quit)")")" && ./scripts/run_receiver.sh
 ```
 
 Then in the headset:
@@ -160,7 +150,7 @@ Then in the headset:
 Create one Shortcut named `Quest Headpose Control` with one `Run Shell Script` action:
 
 ```bash
-/Users/marissameyer/Desktop/Games\ In\ VR/dev.sh shortcut
+cd "$(dirname "$(dirname "$(find "$HOME" -path '*/scripts/quest_shortcut.sh' -print -quit)")")" && ./dev.sh shortcut
 ```
 
 That menu exposes:
