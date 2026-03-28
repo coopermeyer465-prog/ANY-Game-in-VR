@@ -72,6 +72,10 @@ class HeadposeService : Service(), SensorEventListener {
     @Volatile
     private var latestSensorPose: TimedPose? = null
     private var lastPoseSource = PoseSource.NONE
+    private var smoothedYaw = 0f
+    private var smoothedPitch = 0f
+    private var smoothedRoll = 0f
+    private var poseSmoothingInitialized = false
 
     override fun onCreate() {
         super.onCreate()
@@ -158,6 +162,10 @@ class HeadposeService : Service(), SensorEventListener {
                 directEulerRoll = 0f
                 latestSensorPose = null
                 lastPoseSource = PoseSource.NONE
+                poseSmoothingInitialized = false
+                smoothedYaw = 0f
+                smoothedPitch = 0f
+                smoothedRoll = 0f
                 cachedQuestIp = findQuestIp()
                 cachedSensorDescription = describeSensor(sensor, poseSensorMode)
 
@@ -256,7 +264,7 @@ class HeadposeService : Service(), SensorEventListener {
                 resolveCurrentPose()?.let { pose ->
                     sendCurrentPose(pose, activeSocket, resolvedMacAddress, port)
                 }
-                delay(11)
+                delay(8)
             }
         }
     }
@@ -322,6 +330,7 @@ class HeadposeService : Service(), SensorEventListener {
         directEulerInitialized = false
         latestSensorPose = null
         lastPoseSource = PoseSource.NONE
+        poseSmoothingInitialized = false
         HeadposeRepository.update {
             it.copy(
                 connected = false,
@@ -339,6 +348,7 @@ class HeadposeService : Service(), SensorEventListener {
         rollOffset += current.roll
         lastYaw = 0f
         lastPitch = 0f
+        poseSmoothingInitialized = false
         HeadposeRepository.update { it.copy(lastAckMessage = "Recentered at current head pose") }
         if (socket != null && macAddress != null) {
             sendPacketAsync(buildRecenterPayload())
@@ -458,11 +468,27 @@ class HeadposeService : Service(), SensorEventListener {
         val normalizedRoll = normalizeAngle(rollDeg)
 
         val sourceChanged = lastPoseSource != timedPose.source
-        val yawDelta = if (sourceChanged) 0f else normalizeAngle(normalizedYaw - lastYaw)
-        val pitchDelta = if (sourceChanged) 0f else normalizeAngle(normalizedPitch - lastPitch)
+        val smoothingAlpha = when (timedPose.source) {
+            PoseSource.OPENXR -> 0.16f
+            PoseSource.SENSOR -> 0.24f
+            PoseSource.NONE -> 1.0f
+        }
+        if (sourceChanged || !poseSmoothingInitialized) {
+            smoothedYaw = normalizedYaw
+            smoothedPitch = normalizedPitch
+            smoothedRoll = normalizedRoll
+            poseSmoothingInitialized = true
+        } else {
+            smoothedYaw = blendAngle(smoothedYaw, normalizedYaw, smoothingAlpha)
+            smoothedPitch = blendAngle(smoothedPitch, normalizedPitch, smoothingAlpha)
+            smoothedRoll = blendAngle(smoothedRoll, normalizedRoll, smoothingAlpha)
+        }
 
-        lastYaw = normalizedYaw
-        lastPitch = normalizedPitch
+        val yawDelta = if (sourceChanged) 0f else normalizeAngle(smoothedYaw - lastYaw)
+        val pitchDelta = if (sourceChanged) 0f else normalizeAngle(smoothedPitch - lastPitch)
+
+        lastYaw = smoothedYaw
+        lastPitch = smoothedPitch
         lastPoseSource = timedPose.source
 
         if (cachedQuestIp.isBlank()) {
@@ -473,9 +499,9 @@ class HeadposeService : Service(), SensorEventListener {
             lastUiUpdateNs = nowNs
             HeadposeRepository.update { current ->
                 current.copy(
-                    yaw = normalizedYaw,
-                    pitch = normalizedPitch,
-                    roll = normalizedRoll,
+                    yaw = smoothedYaw,
+                    pitch = smoothedPitch,
+                    roll = smoothedRoll,
                     yawVelocity = yawDelta,
                     pitchVelocity = pitchDelta,
                     lastPacketAtMs = System.currentTimeMillis(),
@@ -498,9 +524,9 @@ class HeadposeService : Service(), SensorEventListener {
             .put("questIp", cachedQuestIp)
             .put("questPort", packetSocket.localPort)
             .put("sensitivity", currentState.sensitivity.toDouble())
-            .put("yaw", normalizedYaw.toDouble())
-            .put("pitch", normalizedPitch.toDouble())
-            .put("roll", normalizedRoll.toDouble())
+            .put("yaw", smoothedYaw.toDouble())
+            .put("pitch", smoothedPitch.toDouble())
+            .put("roll", smoothedRoll.toDouble())
             .put("yawDelta", yawDelta.toDouble())
             .put("pitchDelta", pitchDelta.toDouble())
             .put("tsMs", System.currentTimeMillis())
