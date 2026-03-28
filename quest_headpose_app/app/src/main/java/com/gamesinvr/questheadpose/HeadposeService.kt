@@ -79,21 +79,13 @@ class HeadposeService : Service(), SensorEventListener {
 
     override fun onCreate() {
         super.onCreate()
-        sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
-        sensorThread = HandlerThread("QuestHeadposeSensors").also { thread ->
-            thread.start()
-            sensorHandler = Handler(thread.looper)
-        }
-        sensor = selectPoseSensor().also {
-            poseSensorMode = poseSensorModeFor(it)
-        }
         cachedQuestIp = findQuestIp()
-        cachedSensorDescription = describeSensor(sensor, poseSensorMode)
+        cachedSensorDescription = "OpenXR only (no fallback)"
         val savedSensitivity = QuestPrefs.getSensitivity(this)
 
         HeadposeRepository.update {
             it.copy(
-                openXrStatus = "OpenXR native immersive available; window mode uses sensor streaming",
+                openXrStatus = "OpenXR only. Enter OpenXR to stream tracked head pose",
                 sensorName = cachedSensorDescription,
                 sensitivity = savedSensitivity,
             )
@@ -166,20 +158,9 @@ class HeadposeService : Service(), SensorEventListener {
                 smoothedYaw = 0f
                 smoothedPitch = 0f
                 smoothedRoll = 0f
+                lastSendNs = 0L
                 cachedQuestIp = findQuestIp()
-                cachedSensorDescription = describeSensor(sensor, poseSensorMode)
-
-                sensor?.let { activeSensor ->
-                    val registered = sensorManager.registerListener(
-                        this@HeadposeService,
-                        activeSensor,
-                        SensorManager.SENSOR_DELAY_GAME,
-                        sensorHandler,
-                    )
-                    if (!registered) {
-                        Log.w(tag, "Could not register fallback pose sensor listener")
-                    }
-                }
+                cachedSensorDescription = "OpenXR only (no fallback)"
 
                 startReceiveLoop(newSocket)
                 startHandshakeLoop(newSocket, resolvedMacAddress, port)
@@ -193,7 +174,8 @@ class HeadposeService : Service(), SensorEventListener {
                         questIp = cachedQuestIp,
                         localPort = newSocket.localPort,
                         sensorName = cachedSensorDescription,
-                        lastAckMessage = "Connecting to receiver. OpenXR tracked pose is preferred when immersive is active.",
+                        openXrStatus = "OpenXR only. Enter OpenXR to stream tracked head pose",
+                        lastAckMessage = "Connected. Enter OpenXR to start OpenXR-only pose streaming.",
                     )
                 }
                 sendPacket(buildHelloPayload(), resolvedMacAddress, port)
@@ -261,8 +243,11 @@ class HeadposeService : Service(), SensorEventListener {
         streamJob?.cancel()
         streamJob = serviceScope.launch {
             while (isActive && socket === activeSocket && !activeSocket.isClosed) {
-                resolveCurrentPose()?.let { pose ->
+                val pose = resolveCurrentPose()
+                if (pose != null) {
                     sendCurrentPose(pose, activeSocket, resolvedMacAddress, port)
+                } else {
+                    reportOpenXrInactive(activeSocket)
                 }
                 delay(8)
             }
@@ -317,7 +302,6 @@ class HeadposeService : Service(), SensorEventListener {
             }
         }
 
-        sensorManager.unregisterListener(this@HeadposeService)
         receiveJob?.cancel()
         receiveJob = null
         handshakeJob?.cancel()
@@ -336,6 +320,7 @@ class HeadposeService : Service(), SensorEventListener {
                 connected = false,
                 receiverAcknowledged = false,
                 localPort = 0,
+                sensorName = cachedSensorDescription,
                 lastAckMessage = reason,
             )
         }
@@ -374,7 +359,6 @@ class HeadposeService : Service(), SensorEventListener {
     }
 
     override fun onDestroy() {
-        sensorManager.unregisterListener(this)
         receiveJob?.cancel()
         handshakeJob?.cancel()
         streamJob?.cancel()
@@ -431,24 +415,38 @@ class HeadposeService : Service(), SensorEventListener {
     }
 
     private fun resolveCurrentPose(): TimedPose? {
-        OpenXrPoseBridge.latestRecentPose(250_000_000L)?.let { openXrPose ->
-            return TimedPose(
-                pose = Pose(
-                    yaw = openXrPose.yaw,
-                    pitch = openXrPose.pitch,
-                    roll = openXrPose.roll,
-                ),
-                receivedAtNs = openXrPose.receivedAtNs,
-                source = PoseSource.OPENXR,
-                description = "OpenXR tracked head pose",
-            )
-        }
+        val openXrPose = OpenXrPoseBridge.latestRecentPose(250_000_000L) ?: return null
+        return TimedPose(
+            pose = Pose(
+                yaw = openXrPose.yaw,
+                pitch = openXrPose.pitch,
+                roll = openXrPose.roll,
+            ),
+            receivedAtNs = openXrPose.receivedAtNs,
+            source = PoseSource.OPENXR,
+            description = "OpenXR tracked head pose",
+        )
+    }
 
-        val fallbackPose = latestSensorPose ?: return null
-        return if (SystemClock.elapsedRealtimeNanos() - fallbackPose.receivedAtNs <= 250_000_000L) {
-            fallbackPose
-        } else {
-            null
+    private fun reportOpenXrInactive(packetSocket: DatagramSocket) {
+        val nowNs = SystemClock.elapsedRealtimeNanos()
+        if (nowNs - lastUiUpdateNs < 100_000_000L) {
+            return
+        }
+        lastUiUpdateNs = nowNs
+        lastPoseSource = PoseSource.NONE
+        poseSmoothingInitialized = false
+        HeadposeRepository.update { current ->
+            current.copy(
+                questIp = cachedQuestIp.ifBlank { findQuestIp() },
+                localPort = packetSocket.localPort,
+                sensorName = "OpenXR only (no fallback)",
+                openXrStatus = if (current.immersiveActive) {
+                    "OpenXR session starting or paused"
+                } else {
+                    "OpenXR inactive. Enter OpenXR to stream tracked head pose"
+                },
+            )
         }
     }
 
@@ -508,11 +506,7 @@ class HeadposeService : Service(), SensorEventListener {
                     questIp = cachedQuestIp,
                     localPort = packetSocket.localPort,
                     sensorName = timedPose.description,
-                    openXrStatus = when {
-                        timedPose.source == PoseSource.OPENXR -> "OpenXR tracked head pose active"
-                        current.immersiveActive -> "OpenXR tracking unavailable"
-                        else -> current.openXrStatus
-                    },
+                    openXrStatus = "OpenXR tracked head pose active",
                 )
             }
         }
@@ -520,7 +514,7 @@ class HeadposeService : Service(), SensorEventListener {
         val currentState = HeadposeRepository.state.value
         val payload = JSONObject()
             .put("type", "headpose")
-            .put("mode", if (timedPose.source == PoseSource.OPENXR) "openxr" else "window")
+            .put("mode", "openxr")
             .put("questIp", cachedQuestIp)
             .put("questPort", packetSocket.localPort)
             .put("sensitivity", currentState.sensitivity.toDouble())
@@ -545,7 +539,7 @@ class HeadposeService : Service(), SensorEventListener {
             .put("type", "hello")
             .put("questIp", cachedQuestIp.ifBlank { findQuestIp() })
             .put("questPort", socket?.localPort ?: currentState.localPort)
-            .put("sensor", resolveCurrentPose()?.description ?: cachedSensorDescription.ifBlank { currentState.sensorName })
+            .put("sensor", "OpenXR only (no fallback)")
             .put("openxr", currentState.openXrStatus)
             .put("sensitivity", currentState.sensitivity.toDouble())
             .toString()

@@ -68,5 +68,6 @@ cd "$(dirname "$(dirname "$(find "$HOME" -path '*/scripts/quest_shortcut.sh' -pr
 
 - Use the Quest app slider for the 10 built-in head-movement sensitivity presets.
 - Wait for `Receiver ready` before expecting any mouse movement.
+- Press `Enter OpenXR`. The app is OpenXR-only now and will not stream fallback window-mode pose.
 - Use `Recenter` before testing.
 - Hide the macOS cursor in the target app before expecting mouse injection.

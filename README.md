@@ -2,7 +2,7 @@
 
 `Quest Headpose` is a Quest window app plus a macOS terminal receiver.
 
-- The Quest app streams headpose in window mode and in the black OpenXR immersive mode.
+- The Quest app is now OpenXR-only for headpose streaming. The window UI controls the connection, but tracked pose only streams while the app's OpenXR session is active.
 - The macOS receiver listens on UDP and injects mouse motion only when the Quest app is armed and the macOS cursor is hidden.
 - The Quest app now has a 10-preset sensitivity slider for live tuning.
 
@@ -112,14 +112,15 @@ Then in the headset:
 1. Open `Quest Headpose`
 2. Press `Connect`
 3. Wait for `Receiver ready`
-4. Hide the macOS cursor in the target app or game
-5. Tune the 10-step sensitivity slider in the Quest app if needed
+4. Press `Enter OpenXR`
+5. Hide the macOS cursor in the target app or game
+6. Tune the 10-step sensitivity slider in the Quest app if needed
 
 ## Quest App Notes
 
-- `Connect`, `Disconnect`, `Recenter`, and `Enter Immersive` are all in the window UI.
+- `Connect`, `Disconnect`, `Recenter`, and `Enter OpenXR` are all in the window UI.
 - Mouse movement only injects while the macOS cursor is hidden.
-- The immersive mode is a black OpenXR scene for now.
+- The black OpenXR scene is the only source of tracked head pose now. Window mode does not stream fallback pose.
 - Closing the Quest app task disconnects automatically.
 - The sensitivity slider stores its selected preset on the headset and reapplies it on reconnect.
 

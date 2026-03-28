@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">Quest Headpose</string>
-    <string name="app_subtitle">Windowed Quest headpose sender with a black OpenXR view.</string>
+    <string name="app_subtitle">Windowed Quest controller for OpenXR-only headpose streaming.</string>
     <string name="receiver_title">Receiver</string>
     <string name="mac_ip_hint">MacBook receiver IP</string>
     <string name="mac_port_hint">MacBook receiver port</string>

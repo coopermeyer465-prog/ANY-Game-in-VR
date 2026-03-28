@@ -22,7 +22,7 @@ class OpenXrActivity : NativeActivity() {
         HeadposeRepository.update {
             it.copy(
                 immersiveActive = true,
-                openXrStatus = "OpenXR native activity launched",
+                openXrStatus = "OpenXR activity launched; waiting for tracked pose",
             )
         }
     }
@@ -50,7 +50,7 @@ class OpenXrActivity : NativeActivity() {
         HeadposeRepository.update {
             it.copy(
                 immersiveActive = false,
-                openXrStatus = "OpenXR native immersive available; window mode uses sensor streaming",
+                openXrStatus = "OpenXR inactive. Enter OpenXR to stream tracked head pose",
             )
         }
         super.onDestroy()

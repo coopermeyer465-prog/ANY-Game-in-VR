@@ -182,11 +182,7 @@ class MainActivity : AppCompatActivity() {
 
         val connectionLabel = if (state.connected) "Connected" else "Idle"
         val receiverLabel = if (state.receiverAcknowledged) "Receiver ready" else "Waiting for receiver"
-        val openXrLabel = when {
-            state.immersiveActive -> "Immersive active"
-            state.openXrStatus.startsWith("OpenXR error:", ignoreCase = true) -> state.openXrStatus
-            else -> "Ready"
-        }
+        val openXrLabel = state.openXrStatus
         val presetIndex = QuestPrefs.nearestSensitivityPresetIndex(state.sensitivity)
         syncSensitivitySlider(presetIndex, state.sensitivity)
 
