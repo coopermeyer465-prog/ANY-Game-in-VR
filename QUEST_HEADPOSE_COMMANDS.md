@@ -8,12 +8,6 @@ cd "/Users/marissameyer/Desktop/Games In VR"
 
 ## Start Receiver
 
-Build it once if needed:
-
-```bash
-swift build --package-path mac_receiver
-```
-
 Start the receiver:
 
 ```bash
@@ -103,3 +97,4 @@ After that, you can unplug USB again and keep installing wirelessly while the Qu
 - You do not need USB for normal updates once wireless ADB is active.
 - If the Quest fully reboots, you usually need USB once again for `adb tcpip 5555`.
 - Start the receiver before pressing `Connect` in the headset app.
+- The active Mac receiver is `mac_receiver_py/quest_headpose_receiver.py`.

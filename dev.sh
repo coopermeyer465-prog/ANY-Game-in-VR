@@ -3,15 +3,24 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
 CONFIG_FILE="$ROOT_DIR/config/quest_headpose.env"
-RUN_DIR="$ROOT_DIR/run"
-GRADLE_USER_HOME_DIR="$ROOT_DIR/.gradle-home"
+RUN_DIR="${TMPDIR:-/tmp}/games-in-vr-run"
+DEFAULT_GRADLE_USER_HOME_DIR="$ROOT_DIR/.gradle-home"
+GRADLE_USER_HOME_DIR="${GRADLE_USER_HOME:-}"
 RECEIVER_PID_FILE="$RUN_DIR/quest_headpose_receiver.pid"
 RECEIVER_LOG_FILE="$RUN_DIR/quest_headpose_receiver.log"
 RECEIVER_LAUNCH_SCRIPT="$ROOT_DIR/scripts/run_receiver.sh"
+RECEIVER_SCRIPT="$ROOT_DIR/mac_receiver_py/quest_headpose_receiver.py"
 JAVA_HOME_DEFAULT="/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home"
 ANDROID_HOME_DEFAULT="/opt/homebrew/share/android-commandlinetools"
 ANDROID_PROJECT_DIR="$ROOT_DIR/quest_headpose_app"
-RECEIVER_PROJECT_DIR="$ROOT_DIR/mac_receiver"
+
+if [[ -z "$GRADLE_USER_HOME_DIR" ]]; then
+  if [[ -d "$HOME/.gradle" ]]; then
+    GRADLE_USER_HOME_DIR="$HOME/.gradle"
+  else
+    GRADLE_USER_HOME_DIR="$DEFAULT_GRADLE_USER_HOME_DIR"
+  fi
+fi
 
 mkdir -p "$RUN_DIR"
 mkdir -p "$GRADLE_USER_HOME_DIR"
@@ -73,18 +82,26 @@ adb_on_target() {
 detect_mac_ip() {
   local target_ip="${1:-$QUEST_IP}"
   local iface
-  iface="$(route -n get "$target_ip" 2>/dev/null | awk '/interface:/{print $2; exit}')"
-  if [[ -n "$iface" ]]; then
-    ipconfig getifaddr "$iface" 2>/dev/null || true
-    return
-  fi
-
   for candidate in en0 en1; do
-    if ipconfig getifaddr "$candidate" >/dev/null 2>&1; then
-      ipconfig getifaddr "$candidate"
-      return
+    if ifconfig "$candidate" >/dev/null 2>&1; then
+      local detected
+      detected="$(ifconfig "$candidate" | awk '/inet / && $2 != "127.0.0.1" {print $2; exit}')"
+      if [[ -n "$detected" ]]; then
+        echo "$detected"
+        return
+      fi
     fi
   done
+
+  iface="$(route -n get "$target_ip" 2>/dev/null | awk '/interface:/{print $2; exit}')"
+  if [[ -n "$iface" ]] && ifconfig "$iface" >/dev/null 2>&1; then
+    local routed
+    routed="$(ifconfig "$iface" | awk '/inet / && $2 != "127.0.0.1" {print $2; exit}')"
+    if [[ -n "$routed" ]]; then
+      echo "$routed"
+      return
+    fi
+  fi
 }
 
 ensure_java() {
@@ -110,12 +127,19 @@ ensure_android_sdk() {
 }
 
 ensure_receiver_binary() {
-  swift build --package-path "$RECEIVER_PROJECT_DIR"
+  if ! command -v python3 >/dev/null 2>&1; then
+    echo "python3 is required for the receiver." >&2
+    exit 1
+  fi
+  if [[ ! -f "$RECEIVER_SCRIPT" ]]; then
+    echo "Receiver script not found at $RECEIVER_SCRIPT" >&2
+    exit 1
+  fi
 }
 
 receiver_pid() {
   ps -Ao pid=,command= | awk '
-    index($0, "'"$RECEIVER_PROJECT_DIR"'/.build/debug/quest-headpose-receiver run '"$CONFIG_FILE"'") {
+    index($0, "'"$RECEIVER_SCRIPT"' run '"$CONFIG_FILE"'") {
       print $1
       exit
     }
@@ -197,7 +221,7 @@ case "${1:-}" in
     ensure_android_sdk
     (
       cd "$ANDROID_PROJECT_DIR"
-      ./gradlew --no-daemon assembleDebug
+      ./gradlew --no-daemon --console=plain assembleDebug --stacktrace --info
     )
     ;;
 

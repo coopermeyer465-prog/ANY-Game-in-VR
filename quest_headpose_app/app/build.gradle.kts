@@ -6,7 +6,6 @@ plugins {
 android {
     namespace = "com.gamesinvr.questheadpose"
     compileSdk = 35
-    ndkVersion = "26.3.11579264"
 
     defaultConfig {
         applicationId = "com.gamesinvr.questheadpose"
@@ -19,20 +18,6 @@ android {
         }
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-
-        externalNativeBuild {
-            cmake {
-                arguments += listOf(
-                    "-DBUILD_API_LAYERS=OFF",
-                    "-DBUILD_TESTS=OFF",
-                    "-DBUILD_LOADER=ON",
-                    "-DBUILD_CONFORMANCE_TESTS=OFF",
-                    "-DBUILD_SDK_TESTS=OFF",
-                    "-DBUILD_ALL_EXTENSIONS=ON",
-                )
-                targets += listOf("openxr_loader", "quest_headpose_xr")
-            }
-        }
     }
 
     buildTypes {
@@ -54,9 +39,9 @@ android {
         jvmTarget = "17"
     }
 
-    externalNativeBuild {
-        cmake {
-            path = file("src/main/cpp/CMakeLists.txt")
+    sourceSets {
+        getByName("main") {
+            jniLibs.srcDirs("src/main/jniLibs")
         }
     }
 }

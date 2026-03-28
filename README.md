@@ -10,7 +10,8 @@
 ## Project Layout
 
 - `quest_headpose_app/`: Android Quest app titled `Quest Headpose`
-- `mac_receiver/`: Swift receiver binary
+- `mac_receiver_py/`: active macOS UDP receiver
+- `mac_receiver/`: older Swift receiver source
 - `dev.sh`: main terminal entrypoint
 - `scripts/quest_shortcut.sh`: Shortcuts-friendly wrapper
 - `config/quest_headpose.env`: shared runtime config
@@ -61,18 +62,12 @@ What each command does:
 - `build_quest_app`: builds the Quest APK with the vendored OpenXR native activity
 - `install_quest_app`: builds and installs the APK to the connected Quest
 - `./scripts/run_receiver.sh`: starts the macOS UDP receiver in Terminal
-- `connect`: connects wireless ADB, writes the current Mac IP into config, starts the Swift receiver in Terminal, and launches the Quest app with auto-connect arguments
+- `connect`: connects wireless ADB, writes the current Mac IP into config, starts the Python receiver in Terminal, and launches the Quest app with auto-connect arguments
 - `disconnect`: asks the app to disconnect, disconnects wireless ADB, and stops the Mac receiver
 - `set_sensitivity <float>`: updates the mouse sensitivity used by the receiver
 - `receiver_status`: reports whether the receiver is running
 
 ## Receiver
-
-Build once if needed:
-
-```bash
-swift build --package-path mac_receiver
-```
 
 Run the receiver:
 

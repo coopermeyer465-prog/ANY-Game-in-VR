@@ -12,3 +12,5 @@ quest_headpose_app/build/
 quest_headpose_app/app/build/
 quest_headpose_app/local.properties
 mac_receiver/.build/
+__pycache__/
+*.pyc
