@@ -971,6 +971,9 @@ struct OpenXrProgram : IOpenXrProgram {
         XrFrameBeginInfo frameBeginInfo{XR_TYPE_FRAME_BEGIN_INFO};
         CHECK_XRCMD(xrBeginFrame(m_session, &frameBeginInfo));
 
+        // Keep publishing tracked pose even when the runtime chooses not to render a frame.
+        UpdateHeadPose(frameState.predictedDisplayTime);
+
         std::vector<XrCompositionLayerBaseHeader*> layers;
         XrCompositionLayerProjection layer{XR_TYPE_COMPOSITION_LAYER_PROJECTION};
         std::vector<XrCompositionLayerProjectionView> projectionLayerViews;
@@ -996,6 +999,33 @@ struct OpenXrProgram : IOpenXrProgram {
         *yawDeg = m_headYawDeg;
         *pitchDeg = m_headPitchDeg;
         *rollDeg = m_headRollDeg;
+        return true;
+    }
+
+    bool UpdateHeadPose(XrTime predictedDisplayTime) {
+        XrViewState viewState{XR_TYPE_VIEW_STATE};
+        const uint32_t viewCapacityInput = (uint32_t)m_views.size();
+        uint32_t viewCountOutput = 0;
+
+        XrViewLocateInfo viewLocateInfo{XR_TYPE_VIEW_LOCATE_INFO};
+        viewLocateInfo.viewConfigurationType = m_options->Parsed.ViewConfigType;
+        viewLocateInfo.displayTime = predictedDisplayTime;
+        viewLocateInfo.space = m_appSpace;
+
+        const XrResult res =
+            xrLocateViews(m_session, &viewLocateInfo, &viewState, viewCapacityInput, &viewCountOutput, m_views.data());
+        CHECK_XRRESULT(res, "xrLocateViews");
+        if ((viewState.viewStateFlags & XR_VIEW_STATE_POSITION_VALID_BIT) == 0 ||
+            (viewState.viewStateFlags & XR_VIEW_STATE_ORIENTATION_VALID_BIT) == 0 || viewCountOutput == 0) {
+            m_hasHeadPose = false;
+            return false;
+        }
+
+        const EulerDegrees headPose = ToEulerDegrees(m_views[0].pose.orientation);
+        m_headYawDeg = headPose.yaw;
+        m_headPitchDeg = headPose.pitch;
+        m_headRollDeg = headPose.roll;
+        m_hasHeadPose = true;
         return true;
     }
 
