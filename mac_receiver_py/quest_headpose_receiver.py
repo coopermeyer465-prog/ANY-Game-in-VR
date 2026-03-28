@@ -143,6 +143,10 @@ class Receiver:
         self.filtered_dx = 0.0
         self.filtered_dy = 0.0
         self.mouse_armed = False
+        self.filtered_yaw = 0.0
+        self.filtered_pitch = 0.0
+        self.target_cursor_x = 0.0
+        self.target_cursor_y = 0.0
         self.last_cursor_visible = True
         self.last_packet_at = 0.0
         self.last_heartbeat_at = 0.0
@@ -211,6 +215,7 @@ class Receiver:
 
         if message_type == "disconnect":
             print(f"Quest disconnected: {message.get('reason', 'unknown')}", flush=True)
+            self.reset_motion_state()
             self.send_status("Receiver saw disconnect")
             return
 
@@ -221,7 +226,13 @@ class Receiver:
 
         if message_type == "set_mouse_armed":
             self.apply_requested_mouse_armed(message)
+            self.reset_motion_state()
             self.send_status("Mouse armed" if self.mouse_armed else "Mouse paused")
+            return
+
+        if message_type == "recenter":
+            self.reset_motion_state()
+            self.send_status("Receiver recentered")
             return
 
         if message_type != "headpose":
@@ -229,35 +240,24 @@ class Receiver:
 
         self.apply_requested_sensitivity(message)
         self.apply_requested_mouse_armed(message)
-        yaw_delta = float(message.get("yawDelta", 0.0))
-        pitch_delta = float(message.get("pitchDelta", 0.0))
+        yaw = float(message.get("yaw", 0.0))
+        pitch = float(message.get("pitch", 0.0))
         cursor_visible = self.injector.is_cursor_visible()
-        raw_dx = self.shape_axis(
-            yaw_delta,
-            self.config.yaw_deadzone_deg,
-            self.config.yaw_scale,
-        )
-        raw_dy = self.shape_axis(
-            -pitch_delta,
-            self.config.pitch_deadzone_deg,
-            self.config.pitch_scale,
-        )
+        raw_dx, raw_dy = self.compute_motion(yaw, pitch)
         if not self.mouse_armed:
-            self.reset_motion_filter()
+            self.sync_motion_baseline(yaw, pitch)
             dx = 0
             dy = 0
         elif cursor_visible:
-            self.reset_motion_filter()
+            self.sync_motion_baseline(yaw, pitch)
             dx = 0
             dy = 0
         else:
-            dx, dy = self.filter_motion(raw_dx, raw_dy)
+            dx, dy = self.quantize_motion(raw_dx, raw_dy)
             self.injector.inject(dx, dy)
         self.last_cursor_visible = cursor_visible
 
         quest_ip = message.get("questIp", "unknown")
-        yaw = float(message.get("yaw", 0.0))
-        pitch = float(message.get("pitch", 0.0))
         mode = message.get("mode", "window")
         uptime = int(time.time() - self.receiver_start)
         if not self.mouse_armed:
@@ -340,22 +340,37 @@ class Receiver:
             return 0.0
         adjusted = magnitude - deadzone_deg
         curved = adjusted ** self.config.response_exponent
-        return math.copysign(curved * self.config.sensitivity * axis_scale, delta_deg)
+        return math.copysign(curved * (self.config.sensitivity * 0.1) * axis_scale, delta_deg)
 
-    def filter_motion(self, raw_dx: float, raw_dy: float) -> tuple[int, int]:
+    def compute_motion(self, yaw_deg: float, pitch_deg: float) -> tuple[float, float]:
         alpha = max(0.0, min(1.0, self.config.smoothing_alpha))
+        self.filtered_yaw = (1.0 - alpha) * self.filtered_yaw + alpha * yaw_deg
+        self.filtered_pitch = (1.0 - alpha) * self.filtered_pitch + alpha * pitch_deg
+
+        desired_target_x = self.shape_axis(
+            self.filtered_yaw,
+            self.config.yaw_deadzone_deg,
+            self.config.yaw_scale,
+        )
+        desired_target_y = self.shape_axis(
+            -self.filtered_pitch,
+            self.config.pitch_deadzone_deg,
+            self.config.pitch_scale,
+        )
+        raw_dx = desired_target_x - self.target_cursor_x
+        raw_dy = desired_target_y - self.target_cursor_y
+        return raw_dx, raw_dy
+
+    def quantize_motion(self, raw_dx: float, raw_dy: float) -> tuple[int, int]:
         effective_raw_dx = 0.0 if abs(raw_dx) < self.config.deadzone_pixels else raw_dx
         effective_raw_dy = 0.0 if abs(raw_dy) < self.config.deadzone_pixels else raw_dy
-        self.filtered_dx = (1.0 - alpha) * self.filtered_dx + alpha * effective_raw_dx
-        self.filtered_dy = (1.0 - alpha) * self.filtered_dy + alpha * effective_raw_dy
-        if effective_raw_dx == 0.0 and abs(self.filtered_dx) < 0.05:
-            self.filtered_dx = 0.0
-        if effective_raw_dy == 0.0 and abs(self.filtered_dy) < 0.05:
-            self.filtered_dy = 0.0
-
-        clamped_dx = max(-self.config.max_step_pixels, min(self.config.max_step_pixels, self.filtered_dx))
-        clamped_dy = max(-self.config.max_step_pixels, min(self.config.max_step_pixels, self.filtered_dy))
-        return self.quantize_axis(clamped_dx), self.quantize_axis(clamped_dy)
+        clamped_dx = max(-self.config.max_step_pixels, min(self.config.max_step_pixels, effective_raw_dx))
+        clamped_dy = max(-self.config.max_step_pixels, min(self.config.max_step_pixels, effective_raw_dy))
+        dx = self.quantize_axis(clamped_dx)
+        dy = self.quantize_axis(clamped_dy)
+        self.target_cursor_x += dx
+        self.target_cursor_y += dy
+        return dx, dy
 
     def quantize_axis(self, value: float) -> int:
         if abs(value) < 0.5:
@@ -367,9 +382,27 @@ class Receiver:
             return int(math.copysign(self.config.min_step_pixels, rounded))
         return rounded
 
-    def reset_motion_filter(self) -> None:
+    def sync_motion_baseline(self, yaw_deg: float, pitch_deg: float) -> None:
+        self.filtered_yaw = yaw_deg
+        self.filtered_pitch = pitch_deg
+        self.target_cursor_x = self.shape_axis(
+            yaw_deg,
+            self.config.yaw_deadzone_deg,
+            self.config.yaw_scale,
+        )
+        self.target_cursor_y = self.shape_axis(
+            -pitch_deg,
+            self.config.pitch_deadzone_deg,
+            self.config.pitch_scale,
+        )
+
+    def reset_motion_state(self) -> None:
         self.filtered_dx = 0.0
         self.filtered_dy = 0.0
+        self.filtered_yaw = 0.0
+        self.filtered_pitch = 0.0
+        self.target_cursor_x = 0.0
+        self.target_cursor_y = 0.0
 
 
 def main() -> int:

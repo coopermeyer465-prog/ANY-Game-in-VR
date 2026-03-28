@@ -323,6 +323,9 @@ class HeadposeService : Service(), SensorEventListener {
         pitchOffset += current.pitch
         rollOffset += current.roll
         HeadposeRepository.update { it.copy(lastAckMessage = "Recentered at current head pose") }
+        if (socket != null && macAddress != null) {
+            sendPacketAsync(buildRecenterPayload())
+        }
         Log.i(tag, "Recentering head pose")
     }
 
@@ -497,6 +500,13 @@ class HeadposeService : Service(), SensorEventListener {
             .put("type", "set_mouse_armed")
             .put("questIp", cachedQuestIp.ifBlank { findQuestIp() })
             .put("mouseArmed", mouseArmed)
+            .toString()
+    }
+
+    private fun buildRecenterPayload(): String {
+        return JSONObject()
+            .put("type", "recenter")
+            .put("questIp", cachedQuestIp.ifBlank { findQuestIp() })
             .toString()
     }
 
