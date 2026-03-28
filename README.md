@@ -112,14 +112,13 @@ Then in the headset:
 1. Open `Quest Headpose`
 2. Press `Connect`
 3. Wait for `Receiver ready`
-4. Press `Arm Mouse`
-5. Hide the macOS cursor in the target app or game
-6. Tune the 10-step sensitivity slider in the Quest app if needed
+4. Hide the macOS cursor in the target app or game
+5. Tune the 10-step sensitivity slider in the Quest app if needed
 
 ## Quest App Notes
 
 - `Connect`, `Disconnect`, `Recenter`, and `Enter Immersive` are all in the window UI.
-- `Arm Mouse` must be enabled before the receiver can inject motion.
+- Mouse movement only injects while the macOS cursor is hidden.
 - The immersive mode is a black OpenXR scene for now.
 - Closing the Quest app task disconnects automatically.
 - The sensitivity slider stores its selected preset on the headset and reapplies it on reconnect.

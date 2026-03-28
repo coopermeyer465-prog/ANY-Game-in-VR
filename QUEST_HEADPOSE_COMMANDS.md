@@ -67,6 +67,6 @@ cd "$(dirname "$(dirname "$(find "$HOME" -path '*/scripts/quest_shortcut.sh' -pr
 ## Quest App Controls
 
 - Use the Quest app slider for the 10 built-in head-movement sensitivity presets.
-- Wait for `Receiver ready`, then press `Arm Mouse` before expecting any mouse movement.
+- Wait for `Receiver ready` before expecting any mouse movement.
 - Use `Recenter` before testing.
 - Hide the macOS cursor in the target app before expecting mouse injection.

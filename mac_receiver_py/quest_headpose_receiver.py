@@ -142,7 +142,6 @@ class Receiver:
         self.reload_requested = False
         self.filtered_dx = 0.0
         self.filtered_dy = 0.0
-        self.mouse_armed = False
         self.target_cursor_x = 0.0
         self.target_cursor_y = 0.0
         self.emitted_cursor_x = 0.0
@@ -172,7 +171,7 @@ class Receiver:
             f"Filtering: yaw_deadzone={self.config.yaw_deadzone_deg}deg pitch_deadzone={self.config.pitch_deadzone_deg}deg min_step={self.config.min_step_pixels}px max_step={self.config.max_step_pixels}px alpha={self.config.smoothing_alpha} response={self.config.response_exponent} yaw_scale={self.config.yaw_scale} pitch_scale={self.config.pitch_scale}",
             flush=True,
         )
-        print("Mouse events only inject when the Quest app is armed and the macOS cursor is hidden.", flush=True)
+        print("Mouse events only inject while the macOS cursor is hidden.", flush=True)
         if self.injector.is_accessibility_trusted():
             print("Accessibility permission is granted.", flush=True)
         else:
@@ -208,7 +207,6 @@ class Receiver:
 
         if message_type == "hello":
             self.apply_requested_sensitivity(message)
-            self.apply_requested_mouse_armed(message)
             print(f"Quest hello from {message.get('questIp', 'unknown')}", flush=True)
             self.send_status("Receiver ready")
             return
@@ -225,9 +223,8 @@ class Receiver:
             return
 
         if message_type == "set_mouse_armed":
-            self.apply_requested_mouse_armed(message)
             self.reset_motion_state()
-            self.send_status("Mouse armed" if self.mouse_armed else "Mouse paused")
+            self.send_status("Receiver ready")
             return
 
         if message_type == "recenter":
@@ -239,7 +236,6 @@ class Receiver:
             return
 
         self.apply_requested_sensitivity(message)
-        self.apply_requested_mouse_armed(message)
         yaw = float(message.get("yaw", 0.0))
         pitch = float(message.get("pitch", 0.0))
         yaw_delta = float(message.get("yawDelta", 0.0))
@@ -255,11 +251,7 @@ class Receiver:
             self.config.pitch_deadzone_deg,
             self.config.pitch_scale,
         )
-        if not self.mouse_armed:
-            self.reset_motion_state()
-            dx = 0
-            dy = 0
-        elif cursor_visible:
+        if cursor_visible:
             self.reset_motion_state()
             dx = 0
             dy = 0
@@ -271,10 +263,7 @@ class Receiver:
         quest_ip = message.get("questIp", "unknown")
         mode = message.get("mode", "window")
         uptime = int(time.time() - self.receiver_start)
-        if not self.mouse_armed:
-            gate = "blocked(mouse paused)"
-            status_message = "Mouse paused. Arm it in Quest Headpose to inject."
-        elif cursor_visible:
+        if cursor_visible:
             gate = "blocked(cursor visible)"
             status_message = "Cursor visible, injection paused"
         elif dx == 0 and dy == 0:
@@ -298,7 +287,6 @@ class Receiver:
                 "type": "status",
                 "receiverRunning": True,
                 "cursorVisible": self.injector.is_cursor_visible(),
-                "mouseArmed": self.mouse_armed,
                 "sensitivity": self.config.sensitivity,
                 "macIp": self.config.mac_ip,
                 "message": message,
@@ -338,12 +326,6 @@ class Receiver:
         if value <= 0:
             return
         self.config.sensitivity = value
-
-    def apply_requested_mouse_armed(self, message: dict) -> None:
-        requested = message.get("mouseArmed")
-        if requested is None:
-            return
-        self.mouse_armed = bool(requested)
 
     def shape_axis(self, delta_deg: float, deadzone_deg: float, axis_scale: float) -> float:
         magnitude = abs(delta_deg)

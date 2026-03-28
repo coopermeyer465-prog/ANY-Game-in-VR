@@ -7,8 +7,6 @@
     <string name="default_mac_port">7007</string>
     <string name="connect">Connect</string>
     <string name="disconnect">Disconnect</string>
-    <string name="arm_mouse">Arm Mouse</string>
-    <string name="pause_mouse">Pause Mouse</string>
     <string name="recenter">Recenter</string>
     <string name="enter_immersive">Enter Immersive</string>
     <string name="quit_immersive">Quit Immersive</string>
