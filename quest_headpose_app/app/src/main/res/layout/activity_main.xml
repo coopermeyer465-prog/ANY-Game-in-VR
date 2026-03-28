@@ -131,6 +131,32 @@
                             android:layout_weight="1"
                             android:text="@string/enter_immersive" />
                     </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/sensitivityTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="20dp"
+                        android:text="@string/sensitivity_title"
+                        android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1"
+                        android:textColor="@color/quest_fg" />
+
+                    <TextView
+                        android:id="@+id/sensitivityValueText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
+                        android:textColor="@color/quest_fg_muted" />
+
+                    <com.google.android.material.slider.Slider
+                        android:id="@+id/sensitivitySlider"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:valueFrom="0"
+                        android:valueTo="9"
+                        android:stepSize="1" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 

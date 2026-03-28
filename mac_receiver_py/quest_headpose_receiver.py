@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import ctypes
 import json
+import math
 import signal
 import socket
 import sys
@@ -34,14 +35,18 @@ class ReceiverConfig:
             values[key] = value
 
         self.listen_port = int(values.get("LISTEN_PORT", "7007"))
-        self.sensitivity = float(values.get("SENSITIVITY", "18.0"))
+        self.sensitivity = float(values.get("SENSITIVITY", "240.0"))
         self.quest_ip = values.get("QUEST_IP", "")
         self.mac_ip = values.get("MAC_IP", "")
-        self.deadzone_pixels = int(values.get("DEADZONE_PIXELS", "1"))
-        self.max_step_pixels = int(values.get("MAX_STEP_PIXELS", "35"))
-        self.smoothing_alpha = float(values.get("SMOOTHING_ALPHA", "0.25"))
+        self.deadzone_pixels = int(values.get("DEADZONE_PIXELS", "0"))
+        self.max_step_pixels = int(values.get("MAX_STEP_PIXELS", "140"))
+        self.min_step_pixels = int(values.get("MIN_STEP_PIXELS", "2"))
+        self.smoothing_alpha = float(values.get("SMOOTHING_ALPHA", "0.78"))
         self.yaw_scale = float(values.get("YAW_SCALE", "1.0"))
-        self.pitch_scale = float(values.get("PITCH_SCALE", "0.0"))
+        self.pitch_scale = float(values.get("PITCH_SCALE", "0.55"))
+        self.yaw_deadzone_deg = float(values.get("YAW_DEADZONE_DEG", "0.08"))
+        self.pitch_deadzone_deg = float(values.get("PITCH_DEADZONE_DEG", "0.10"))
+        self.response_exponent = float(values.get("RESPONSE_EXPONENT", "0.85"))
 
 
 class MouseInjector:
@@ -137,8 +142,6 @@ class Receiver:
         self.reload_requested = False
         self.filtered_dx = 0.0
         self.filtered_dy = 0.0
-        self.residual_dx = 0.0
-        self.residual_dy = 0.0
         self.last_cursor_visible = True
         self.last_packet_at = 0.0
         self.last_heartbeat_at = 0.0
@@ -161,7 +164,7 @@ class Receiver:
             print(f"Configured Quest IP: {self.config.quest_ip}", flush=True)
         print(f"Sensitivity: {self.config.sensitivity}", flush=True)
         print(
-            f"Filtering: deadzone={self.config.deadzone_pixels}px max_step={self.config.max_step_pixels}px alpha={self.config.smoothing_alpha} yaw_scale={self.config.yaw_scale} pitch_scale={self.config.pitch_scale}",
+            f"Filtering: yaw_deadzone={self.config.yaw_deadzone_deg}deg pitch_deadzone={self.config.pitch_deadzone_deg}deg min_step={self.config.min_step_pixels}px max_step={self.config.max_step_pixels}px alpha={self.config.smoothing_alpha} response={self.config.response_exponent} yaw_scale={self.config.yaw_scale} pitch_scale={self.config.pitch_scale}",
             flush=True,
         )
         print("Mouse events only inject while the macOS cursor is hidden.", flush=True)
@@ -176,7 +179,7 @@ class Receiver:
                 self.reload_requested = False
                 print(f"Reloaded sensitivity: {self.config.sensitivity}", flush=True)
                 print(
-                    f"Reloaded filtering: deadzone={self.config.deadzone_pixels}px max_step={self.config.max_step_pixels}px alpha={self.config.smoothing_alpha} yaw_scale={self.config.yaw_scale} pitch_scale={self.config.pitch_scale}",
+                    f"Reloaded filtering: yaw_deadzone={self.config.yaw_deadzone_deg}deg pitch_deadzone={self.config.pitch_deadzone_deg}deg min_step={self.config.min_step_pixels}px max_step={self.config.max_step_pixels}px alpha={self.config.smoothing_alpha} response={self.config.response_exponent} yaw_scale={self.config.yaw_scale} pitch_scale={self.config.pitch_scale}",
                     flush=True,
                 )
 
@@ -199,6 +202,7 @@ class Receiver:
         message_type = message.get("type")
 
         if message_type == "hello":
+            self.apply_requested_sensitivity(message)
             print(f"Quest hello from {message.get('questIp', 'unknown')}", flush=True)
             self.send_status("Receiver ready")
             return
@@ -208,14 +212,28 @@ class Receiver:
             self.send_status("Receiver saw disconnect")
             return
 
+        if message_type == "set_sensitivity":
+            self.apply_requested_sensitivity(message)
+            self.send_status(f"Sensitivity updated to {self.config.sensitivity:.0f}")
+            return
+
         if message_type != "headpose":
             return
 
+        self.apply_requested_sensitivity(message)
         yaw_delta = float(message.get("yawDelta", 0.0))
         pitch_delta = float(message.get("pitchDelta", 0.0))
         cursor_visible = self.injector.is_cursor_visible()
-        raw_dx = yaw_delta * self.config.sensitivity * self.config.yaw_scale
-        raw_dy = -pitch_delta * self.config.sensitivity * self.config.pitch_scale
+        raw_dx = self.shape_axis(
+            yaw_delta,
+            self.config.yaw_deadzone_deg,
+            self.config.yaw_scale,
+        )
+        raw_dy = self.shape_axis(
+            -pitch_delta,
+            self.config.pitch_deadzone_deg,
+            self.config.pitch_scale,
+        )
         if cursor_visible:
             self.reset_motion_filter()
             dx = 0
@@ -282,6 +300,26 @@ class Receiver:
         else:
             print(f"Receiver alive; last Quest packet was {age:.1f}s ago", flush=True)
 
+    def apply_requested_sensitivity(self, message: dict) -> None:
+        requested = message.get("sensitivity")
+        if requested is None:
+            return
+        try:
+            value = float(requested)
+        except (TypeError, ValueError):
+            return
+        if value <= 0:
+            return
+        self.config.sensitivity = value
+
+    def shape_axis(self, delta_deg: float, deadzone_deg: float, axis_scale: float) -> float:
+        magnitude = abs(delta_deg)
+        if magnitude <= deadzone_deg:
+            return 0.0
+        adjusted = magnitude - deadzone_deg
+        curved = adjusted ** self.config.response_exponent
+        return math.copysign(curved * self.config.sensitivity * axis_scale, delta_deg)
+
     def filter_motion(self, raw_dx: float, raw_dy: float) -> tuple[int, int]:
         alpha = max(0.0, min(1.0, self.config.smoothing_alpha))
         effective_raw_dx = 0.0 if abs(raw_dx) < self.config.deadzone_pixels else raw_dx
@@ -295,23 +333,21 @@ class Receiver:
 
         clamped_dx = max(-self.config.max_step_pixels, min(self.config.max_step_pixels, self.filtered_dx))
         clamped_dy = max(-self.config.max_step_pixels, min(self.config.max_step_pixels, self.filtered_dy))
+        return self.quantize_axis(clamped_dx), self.quantize_axis(clamped_dy)
 
-        self.residual_dx += clamped_dx
-        self.residual_dy += clamped_dy
-
-        step_dx = int(round(self.residual_dx))
-        step_dy = int(round(self.residual_dy))
-
-        self.residual_dx -= step_dx
-        self.residual_dy -= step_dy
-
-        return step_dx, step_dy
+    def quantize_axis(self, value: float) -> int:
+        if abs(value) < 0.5:
+            return 0
+        rounded = int(round(value))
+        if rounded == 0:
+            return 0
+        if abs(rounded) < self.config.min_step_pixels:
+            return int(math.copysign(self.config.min_step_pixels, rounded))
+        return rounded
 
     def reset_motion_filter(self) -> None:
         self.filtered_dx = 0.0
         self.filtered_dy = 0.0
-        self.residual_dx = 0.0
-        self.residual_dy = 0.0
 
 
 def main() -> int:

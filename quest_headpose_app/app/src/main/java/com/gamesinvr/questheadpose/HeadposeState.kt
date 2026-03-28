@@ -20,7 +20,7 @@ data class HeadposeState(
     val lastAckMessage: String = "No receiver reply yet",
     val lastPacketAtMs: Long = 0L,
     val lastAckAtMs: Long = 0L,
-    val sensitivity: Float = 18f,
+    val sensitivity: Float = 240f,
     val immersiveActive: Boolean = false,
 )
 

@@ -11,4 +11,6 @@
     <string name="enter_immersive">Enter Immersive</string>
     <string name="quit_immersive">Quit Immersive</string>
     <string name="stats_title">Status</string>
+    <string name="sensitivity_title">Head Movement Sensitivity</string>
+    <string name="sensitivity_value">Preset %1$d/%2$d  ·  %3$d</string>
 </resources>

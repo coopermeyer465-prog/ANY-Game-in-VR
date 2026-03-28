@@ -76,11 +76,13 @@ class HeadposeService : Service(), SensorEventListener {
         }
         cachedQuestIp = findQuestIp()
         cachedSensorDescription = describeSensor(sensor, poseSensorMode)
+        val savedSensitivity = QuestPrefs.getSensitivity(this)
 
         HeadposeRepository.update {
             it.copy(
                 openXrStatus = "OpenXR native immersive available; window mode uses sensor streaming",
                 sensorName = cachedSensorDescription,
+                sensitivity = savedSensitivity,
             )
         }
     }
@@ -99,6 +101,14 @@ class HeadposeService : Service(), SensorEventListener {
             }
 
             ACTION_RECENTER -> recenter()
+
+            ACTION_SET_SENSITIVITY -> {
+                val requestedSensitivity = intent.getFloatExtra(
+                    EXTRA_SENSITIVITY,
+                    HeadposeRepository.state.value.sensitivity,
+                )
+                updateSensitivity(requestedSensitivity)
+            }
         }
         return START_NOT_STICKY
     }
@@ -305,6 +315,23 @@ class HeadposeService : Service(), SensorEventListener {
         Log.i(tag, "Recentering head pose")
     }
 
+    private fun updateSensitivity(value: Float) {
+        val sanitizedValue = value.coerceAtLeast(1f)
+        HeadposeRepository.update { current ->
+            current.copy(
+                sensitivity = sanitizedValue,
+                lastAckMessage = if (current.connected) {
+                    "Updating sensitivity to ${sanitizedValue.toInt()}"
+                } else {
+                    "Sensitivity preset saved"
+                },
+            )
+        }
+        if (socket != null && macAddress != null) {
+            sendPacketAsync(buildSensitivityPayload(sanitizedValue))
+        }
+    }
+
     override fun onDestroy() {
         sensorManager.unregisterListener(this)
         receiveJob?.cancel()
@@ -385,6 +412,7 @@ class HeadposeService : Service(), SensorEventListener {
             .put("mode", if (currentState.immersiveActive) "openxr" else "window")
             .put("questIp", cachedQuestIp)
             .put("questPort", packetSocket.localPort)
+            .put("sensitivity", currentState.sensitivity.toDouble())
             .put("yaw", normalizedYaw.toDouble())
             .put("pitch", normalizedPitch.toDouble())
             .put("roll", normalizedRoll.toDouble())
@@ -423,6 +451,15 @@ class HeadposeService : Service(), SensorEventListener {
             .put("questPort", socket?.localPort ?: currentState.localPort)
             .put("sensor", cachedSensorDescription.ifBlank { currentState.sensorName })
             .put("openxr", currentState.openXrStatus)
+            .put("sensitivity", currentState.sensitivity.toDouble())
+            .toString()
+    }
+
+    private fun buildSensitivityPayload(sensitivity: Float): String {
+        return JSONObject()
+            .put("type", "set_sensitivity")
+            .put("questIp", cachedQuestIp.ifBlank { findQuestIp() })
+            .put("sensitivity", sensitivity.toDouble())
             .toString()
     }
 
@@ -690,7 +727,9 @@ class HeadposeService : Service(), SensorEventListener {
         const val ACTION_CONNECT = "com.gamesinvr.questheadpose.CONNECT"
         const val ACTION_DISCONNECT = "com.gamesinvr.questheadpose.DISCONNECT"
         const val ACTION_RECENTER = "com.gamesinvr.questheadpose.RECENTER"
+        const val ACTION_SET_SENSITIVITY = "com.gamesinvr.questheadpose.SET_SENSITIVITY"
         const val EXTRA_MAC_IP = "mac_ip"
         const val EXTRA_MAC_PORT = "mac_port"
+        const val EXTRA_SENSITIVITY = "sensitivity"
     }
 }

@@ -9,9 +9,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import com.google.android.material.slider.Slider
 import kotlinx.coroutines.launch
 import java.text.DecimalFormat
-import java.util.Locale
 
 class MainActivity : AppCompatActivity() {
     private lateinit var macIpInput: EditText
@@ -20,11 +20,15 @@ class MainActivity : AppCompatActivity() {
     private lateinit var disconnectButton: Button
     private lateinit var recenterButton: Button
     private lateinit var immersiveButton: Button
+    private lateinit var sensitivitySlider: Slider
+    private lateinit var sensitivityValueText: TextView
     private lateinit var statusText: TextView
 
     private val decimal = DecimalFormat("0.00")
+    private val sensitivityPresets = QuestPrefs.sensitivityPresets
     private var autoConnectRequested = false
     private var disconnectRequested = false
+    private var syncingSensitivitySlider = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,12 +40,18 @@ class MainActivity : AppCompatActivity() {
         disconnectButton = findViewById(R.id.disconnectButton)
         recenterButton = findViewById(R.id.recenterButton)
         immersiveButton = findViewById(R.id.immersiveButton)
+        sensitivitySlider = findViewById(R.id.sensitivitySlider)
+        sensitivityValueText = findViewById(R.id.sensitivityValueText)
         statusText = findViewById(R.id.statusText)
 
         if (macIpInput.text.isNullOrBlank()) {
             macIpInput.setText(QuestPrefs.getMacIp(this))
         }
         macPortInput.setText(QuestPrefs.getMacPort(this).toString())
+        val savedSensitivityIndex = QuestPrefs.getSensitivityPresetIndex(this)
+        val savedSensitivity = sensitivityPresets[savedSensitivityIndex]
+        HeadposeRepository.update { it.copy(sensitivity = savedSensitivity) }
+        syncSensitivitySlider(savedSensitivityIndex, savedSensitivity)
         applyLaunchExtras(intent)
 
         connectButton.setOnClickListener {
@@ -70,6 +80,14 @@ class MainActivity : AppCompatActivity() {
             } else {
                 OpenXrActivity.launch(this)
             }
+        }
+
+        sensitivitySlider.addOnChangeListener { _, value, fromUser ->
+            if (!fromUser || syncingSensitivitySlider) {
+                return@addOnChangeListener
+            }
+            val presetIndex = value.toInt().coerceIn(0, sensitivityPresets.lastIndex)
+            applySensitivityPreset(presetIndex)
         }
 
         lifecycleScope.launch {
@@ -115,6 +133,46 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun applySensitivityPreset(index: Int) {
+        val presetIndex = index.coerceIn(0, sensitivityPresets.lastIndex)
+        val sensitivity = sensitivityPresets[presetIndex]
+        QuestPrefs.saveSensitivityPresetIndex(this, presetIndex)
+        HeadposeRepository.update { current ->
+            current.copy(
+                sensitivity = sensitivity,
+                lastAckMessage = if (current.connected) {
+                    "Updating sensitivity to ${sensitivity.toInt()}"
+                } else {
+                    "Sensitivity preset saved"
+                },
+            )
+        }
+        updateSensitivityLabel(presetIndex, sensitivity)
+        if (HeadposeRepository.state.value.connected) {
+            startService(
+                Intent(this, HeadposeService::class.java)
+                    .setAction(HeadposeService.ACTION_SET_SENSITIVITY)
+                    .putExtra(HeadposeService.EXTRA_SENSITIVITY, sensitivity),
+            )
+        }
+    }
+
+    private fun syncSensitivitySlider(index: Int, sensitivity: Float) {
+        syncingSensitivitySlider = true
+        sensitivitySlider.value = index.toFloat()
+        syncingSensitivitySlider = false
+        updateSensitivityLabel(index, sensitivity)
+    }
+
+    private fun updateSensitivityLabel(index: Int, sensitivity: Float) {
+        sensitivityValueText.text = getString(
+            R.string.sensitivity_value,
+            index + 1,
+            sensitivityPresets.size,
+            sensitivity.toInt(),
+        )
+    }
+
     private fun renderState(state: HeadposeState) {
         immersiveButton.text = if (state.immersiveActive) {
             getString(R.string.quit_immersive)
@@ -129,16 +187,17 @@ class MainActivity : AppCompatActivity() {
             state.openXrStatus.startsWith("OpenXR error:", ignoreCase = true) -> state.openXrStatus
             else -> "Ready"
         }
+        val presetIndex = QuestPrefs.nearestSensitivityPresetIndex(state.sensitivity)
+        syncSensitivitySlider(presetIndex, state.sensitivity)
 
         statusText.text =
             """
             Connection: $connectionLabel
             Receiver: $receiverLabel
             OpenXR: $openXrLabel
-            Sensor: ${state.sensorName}
+            Sensitivity: ${state.sensitivity.toInt()}
             Yaw: ${decimal.format(state.yaw)}
             Pitch: ${decimal.format(state.pitch)}
-            Roll: ${decimal.format(state.roll)}
             Message: ${state.lastAckMessage}
             """.trimIndent()
     }

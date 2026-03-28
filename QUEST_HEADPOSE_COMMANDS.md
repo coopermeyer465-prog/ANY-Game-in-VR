@@ -8,8 +8,6 @@ cd "/Users/marissameyer/Desktop/Games In VR"
 
 ## Start Receiver
 
-Start the receiver:
-
 ```bash
 ./scripts/run_receiver.sh
 ```
@@ -20,38 +18,27 @@ Start the receiver:
 ./dev.sh build_quest_app
 ```
 
-## Install Or Update Quest Headpose Over USB
+## Install Or Update Over USB
 
 ```bash
 adb devices
 adb -s 340YC10G9B0S11 install -r "/Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/build/outputs/apk/debug/app-debug.apk"
 ```
 
-## Install Or Update Quest Headpose Wirelessly
-
-Wireless install or update:
+## Install Or Update Over Wireless ADB
 
 ```bash
 adb connect 192.168.0.63:5555
 ./dev.sh install_quest_app
 ```
 
-Direct install command:
+## Connect Quest Headpose
 
 ```bash
-adb -s 192.168.0.63:5555 install -r "/Users/marissameyer/Desktop/Games In VR/quest_headpose_app/app/build/outputs/apk/debug/app-debug.apk"
-```
-
-## Connect The Quest App To The Mac Receiver
-
-Make sure the receiver is already running, then:
-
-```bash
-adb connect 192.168.0.63:5555
 ./dev.sh connect
 ```
 
-On the headset, open `Quest Headpose` and press `Connect`.
+Then open `Quest Headpose` in the headset and press `Connect`.
 
 ## Disconnect
 
@@ -59,15 +46,13 @@ On the headset, open `Quest Headpose` and press `Connect`.
 ./dev.sh disconnect
 ```
 
-## Change Sensitivity
+## Set Receiver Sensitivity From The Mac
 
 ```bash
-./dev.sh set_sensitivity 18.0
+./dev.sh set_sensitivity 240.0
 ```
 
 ## Detect Quest IP
-
-If the Quest IP changes:
 
 ```bash
 ./dev.sh detect_quest_ip
@@ -79,9 +64,7 @@ If the Quest IP changes:
 ./dev.sh receiver_status
 ```
 
-## If Wireless ADB Stops Working
-
-Usually this happens after a full reboot or power-off. Use USB once:
+## Re-enable Wireless ADB After A Full Quest Reboot
 
 ```bash
 adb devices
@@ -89,12 +72,8 @@ adb tcpip 5555
 adb connect 192.168.0.63:5555
 ```
 
-After that, you can unplug USB again and keep installing wirelessly while the Quest stays on or asleep.
+## Quest App Controls
 
-## Notes
-
-- The Quest window app works in normal window mode and is supposed to keep sending while immersive is active.
-- You do not need USB for normal updates once wireless ADB is active.
-- If the Quest fully reboots, you usually need USB once again for `adb tcpip 5555`.
-- Start the receiver before pressing `Connect` in the headset app.
-- The active Mac receiver is `mac_receiver_py/quest_headpose_receiver.py`.
+- Use the Quest app slider for the 10 built-in head-movement sensitivity presets.
+- Use `Recenter` before testing.
+- Hide the macOS cursor in the target app before expecting mouse injection.

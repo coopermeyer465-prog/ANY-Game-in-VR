@@ -25,7 +25,7 @@ case "$ACTION" in
   "Change Head Movement Sensitivity")
     VALUE="${2:-}"
     if [[ -z "$VALUE" ]]; then
-      VALUE="$(osascript -e 'text returned of (display dialog "Sensitivity" default answer "18.0")')"
+      VALUE="$(osascript -e 'text returned of (display dialog "Sensitivity" default answer "240.0")')"
     fi
     exec "$DEV_SH" set_sensitivity "$VALUE"
     ;;
