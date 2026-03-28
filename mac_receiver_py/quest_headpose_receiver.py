@@ -38,6 +38,7 @@ class ReceiverConfig:
         self.sensitivity = float(values.get("SENSITIVITY", "240.0"))
         self.quest_ip = values.get("QUEST_IP", "")
         self.mac_ip = values.get("MAC_IP", "")
+        self.visible_cursor_test = values.get("VISIBLE_CURSOR_TEST", "1").strip().lower() in {"1", "true", "yes", "on"}
         self.deadzone_pixels = int(values.get("DEADZONE_PIXELS", "0"))
         self.max_step_pixels = int(values.get("MAX_STEP_PIXELS", "140"))
         self.min_step_pixels = int(values.get("MIN_STEP_PIXELS", "2"))
@@ -167,7 +168,10 @@ class Receiver:
             f"Filtering: yaw_deadzone={self.config.yaw_deadzone_deg}deg pitch_deadzone={self.config.pitch_deadzone_deg}deg min_step={self.config.min_step_pixels}px max_step={self.config.max_step_pixels}px alpha={self.config.smoothing_alpha} response={self.config.response_exponent} yaw_scale={self.config.yaw_scale} pitch_scale={self.config.pitch_scale}",
             flush=True,
         )
-        print("Mouse events only inject while the macOS cursor is hidden.", flush=True)
+        if self.config.visible_cursor_test:
+            print("Visible cursor test mode is enabled.", flush=True)
+        else:
+            print("Mouse events only inject while the macOS cursor is hidden.", flush=True)
         if self.injector.is_accessibility_trusted():
             print("Accessibility permission is granted.", flush=True)
         else:
@@ -238,7 +242,7 @@ class Receiver:
         pitch_delta = float(message.get("pitchDelta", 0.0))
         cursor_visible = self.injector.is_cursor_visible()
         raw_dx = self.shape_axis(
-            yaw_delta,
+            -yaw_delta,
             self.config.yaw_deadzone_deg,
             self.config.yaw_scale,
         )
@@ -247,7 +251,7 @@ class Receiver:
             self.config.pitch_deadzone_deg,
             self.config.pitch_scale,
         )
-        if cursor_visible:
+        if cursor_visible and not self.config.visible_cursor_test:
             self.reset_motion_state()
             dx = 0
             dy = 0
@@ -259,12 +263,15 @@ class Receiver:
         quest_ip = message.get("questIp", "unknown")
         mode = message.get("mode", "window")
         uptime = int(time.time() - self.receiver_start)
-        if cursor_visible:
+        if cursor_visible and not self.config.visible_cursor_test:
             gate = "blocked(cursor visible)"
             status_message = "Cursor visible, injection paused"
         elif dx == 0 and dy == 0:
-            gate = "tracking(hidden cursor, output below threshold)"
+            gate = "tracking(output below threshold)"
             status_message = "Tracking headpose; motion below output threshold"
+        elif cursor_visible:
+            gate = "injecting(visible test)"
+            status_message = "Injecting visible-cursor test motion"
         else:
             gate = "injecting"
             status_message = "Injecting hidden-cursor motion"
@@ -328,8 +335,7 @@ class Receiver:
         if magnitude <= deadzone_deg:
             return 0.0
         adjusted = magnitude - deadzone_deg
-        curved = adjusted ** self.config.response_exponent
-        return math.copysign(curved * (self.config.sensitivity * 0.02) * axis_scale, delta_deg)
+        return math.copysign(adjusted * (self.config.sensitivity * 0.02) * axis_scale, delta_deg)
 
     def filter_motion(self, raw_dx: float, raw_dy: float) -> tuple[int, int]:
         alpha = max(0.0, min(1.0, self.config.smoothing_alpha))
