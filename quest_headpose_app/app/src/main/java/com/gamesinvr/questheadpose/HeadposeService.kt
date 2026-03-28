@@ -658,14 +658,14 @@ class HeadposeService : Service(), SensorEventListener {
     }
 
     private fun decodeQuestEulerPose(values: FloatArray): Pose? {
-        if (values.size < 3) {
+        if (values.size < 4) {
             return null
         }
         maybeLogRawDirectEuler(values)
         return Pose(
-            yaw = normalizeAngle(values[1]),
-            pitch = normalizeAngle(values[0]),
-            roll = normalizeAngle(values[2]),
+            yaw = normalizeAngle(values[0]),
+            pitch = normalizeAngle(values[2]),
+            roll = normalizeAngle(values[3]),
         )
     }
 
@@ -678,7 +678,7 @@ class HeadposeService : Service(), SensorEventListener {
         val raw = values.joinToString(prefix = "[", postfix = "]", limit = 8) { "%.3f".format(it) }
         Log.i(
             tag,
-            "Direct Euler raw=$raw mappedYaw=${"%.3f".format(values[1])} mappedPitch=${"%.3f".format(values[0])} mappedRoll=${"%.3f".format(values[2])}",
+            "Direct Euler raw=$raw mappedYaw=${"%.3f".format(values[0])} mappedPitch=${"%.3f".format(values[2])} mappedRoll=${"%.3f".format(values[3])}",
         )
     }
 
