@@ -40,13 +40,13 @@ class ReceiverConfig:
         self.mac_ip = values.get("MAC_IP", "")
         self.visible_cursor_test = values.get("VISIBLE_CURSOR_TEST", "1").strip().lower() in {"1", "true", "yes", "on"}
         self.deadzone_pixels = int(values.get("DEADZONE_PIXELS", "0"))
-        self.max_step_pixels = int(values.get("MAX_STEP_PIXELS", "96"))
+        self.max_step_pixels = int(values.get("MAX_STEP_PIXELS", "140"))
         self.min_step_pixels = int(values.get("MIN_STEP_PIXELS", "2"))
-        self.smoothing_alpha = float(values.get("SMOOTHING_ALPHA", "0.18"))
-        self.yaw_scale = float(values.get("YAW_SCALE", "1.5"))
-        self.pitch_scale = float(values.get("PITCH_SCALE", "1.3"))
-        self.yaw_deadzone_deg = float(values.get("YAW_DEADZONE_DEG", "0.02"))
-        self.pitch_deadzone_deg = float(values.get("PITCH_DEADZONE_DEG", "0.02"))
+        self.smoothing_alpha = float(values.get("SMOOTHING_ALPHA", "0.10"))
+        self.yaw_scale = float(values.get("YAW_SCALE", "1.6"))
+        self.pitch_scale = float(values.get("PITCH_SCALE", "2.0"))
+        self.yaw_deadzone_deg = float(values.get("YAW_DEADZONE_DEG", "0.05"))
+        self.pitch_deadzone_deg = float(values.get("PITCH_DEADZONE_DEG", "0.04"))
         self.response_exponent = float(values.get("RESPONSE_EXPONENT", "0.85"))
 
 
@@ -143,6 +143,11 @@ class Receiver:
         self.reload_requested = False
         self.filtered_dx = 0.0
         self.filtered_dy = 0.0
+        self.smoothed_yaw = 0.0
+        self.smoothed_pitch = 0.0
+        self.last_smoothed_yaw = 0.0
+        self.last_smoothed_pitch = 0.0
+        self.pose_initialized = False
         self.last_cursor_visible = True
         self.last_packet_at = 0.0
         self.last_heartbeat_at = 0.0
@@ -238,8 +243,7 @@ class Receiver:
         self.apply_requested_sensitivity(message)
         yaw = float(message.get("yaw", 0.0))
         pitch = float(message.get("pitch", 0.0))
-        yaw_delta = float(message.get("yawDelta", 0.0))
-        pitch_delta = float(message.get("pitchDelta", 0.0))
+        yaw_delta, pitch_delta = self.smooth_pose(yaw, pitch)
         cursor_visible = self.injector.is_cursor_visible()
         raw_dx = self.shape_axis(
             yaw_delta,
@@ -335,10 +339,10 @@ class Receiver:
         if magnitude <= deadzone_deg:
             return 0.0
         adjusted = magnitude - deadzone_deg
-        return math.copysign(adjusted * (self.config.sensitivity * 0.03) * axis_scale, delta_deg)
+        return math.copysign(adjusted * (self.config.sensitivity * 0.04) * axis_scale, delta_deg)
 
     def filter_motion(self, raw_dx: float, raw_dy: float) -> tuple[int, int]:
-        alpha = max(0.0, min(1.0, self.config.smoothing_alpha))
+        alpha = max(0.12, min(0.4, self.config.smoothing_alpha * 2.2))
         effective_raw_dx = 0.0 if abs(raw_dx) < self.config.deadzone_pixels else raw_dx
         effective_raw_dy = 0.0 if abs(raw_dy) < self.config.deadzone_pixels else raw_dy
         self.filtered_dx = (1.0 - alpha) * self.filtered_dx + alpha * effective_raw_dx
@@ -363,6 +367,40 @@ class Receiver:
     def reset_motion_state(self) -> None:
         self.filtered_dx = 0.0
         self.filtered_dy = 0.0
+        self.pose_initialized = False
+
+    def smooth_pose(self, yaw: float, pitch: float) -> tuple[float, float]:
+        alpha = max(0.04, min(0.25, self.config.smoothing_alpha))
+        if not self.pose_initialized:
+            self.smoothed_yaw = yaw
+            self.smoothed_pitch = pitch
+            self.last_smoothed_yaw = yaw
+            self.last_smoothed_pitch = pitch
+            self.pose_initialized = True
+            return 0.0, 0.0
+
+        self.smoothed_yaw = self.blend_angle(self.smoothed_yaw, yaw, alpha)
+        self.smoothed_pitch = self.blend_linear(self.smoothed_pitch, pitch, alpha)
+
+        yaw_delta = self.normalize_angle(self.smoothed_yaw - self.last_smoothed_yaw)
+        pitch_delta = self.smoothed_pitch - self.last_smoothed_pitch
+
+        self.last_smoothed_yaw = self.smoothed_yaw
+        self.last_smoothed_pitch = self.smoothed_pitch
+        return yaw_delta, pitch_delta
+
+    def blend_linear(self, current: float, target: float, alpha: float) -> float:
+        return current + (target - current) * alpha
+
+    def blend_angle(self, current: float, target: float, alpha: float) -> float:
+        return self.normalize_angle(current + self.normalize_angle(target - current) * alpha)
+
+    def normalize_angle(self, angle: float) -> float:
+        while angle > 180.0:
+            angle -= 360.0
+        while angle <= -180.0:
+            angle += 360.0
+        return angle
 
 
 def main() -> int:
