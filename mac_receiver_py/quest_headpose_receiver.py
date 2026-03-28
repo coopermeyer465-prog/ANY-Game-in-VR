@@ -40,13 +40,13 @@ class ReceiverConfig:
         self.mac_ip = values.get("MAC_IP", "")
         self.visible_cursor_test = values.get("VISIBLE_CURSOR_TEST", "1").strip().lower() in {"1", "true", "yes", "on"}
         self.deadzone_pixels = int(values.get("DEADZONE_PIXELS", "0"))
-        self.max_step_pixels = int(values.get("MAX_STEP_PIXELS", "140"))
+        self.max_step_pixels = int(values.get("MAX_STEP_PIXELS", "220"))
         self.min_step_pixels = int(values.get("MIN_STEP_PIXELS", "2"))
-        self.smoothing_alpha = float(values.get("SMOOTHING_ALPHA", "0.78"))
-        self.yaw_scale = float(values.get("YAW_SCALE", "1.0"))
-        self.pitch_scale = float(values.get("PITCH_SCALE", "0.55"))
-        self.yaw_deadzone_deg = float(values.get("YAW_DEADZONE_DEG", "0.08"))
-        self.pitch_deadzone_deg = float(values.get("PITCH_DEADZONE_DEG", "0.10"))
+        self.smoothing_alpha = float(values.get("SMOOTHING_ALPHA", "0.45"))
+        self.yaw_scale = float(values.get("YAW_SCALE", "1.8"))
+        self.pitch_scale = float(values.get("PITCH_SCALE", "1.6"))
+        self.yaw_deadzone_deg = float(values.get("YAW_DEADZONE_DEG", "0.015"))
+        self.pitch_deadzone_deg = float(values.get("PITCH_DEADZONE_DEG", "0.015"))
         self.response_exponent = float(values.get("RESPONSE_EXPONENT", "0.85"))
 
 
@@ -335,7 +335,7 @@ class Receiver:
         if magnitude <= deadzone_deg:
             return 0.0
         adjusted = magnitude - deadzone_deg
-        return math.copysign(adjusted * (self.config.sensitivity * 0.02) * axis_scale, delta_deg)
+        return math.copysign(adjusted * (self.config.sensitivity * 0.05) * axis_scale, delta_deg)
 
     def filter_motion(self, raw_dx: float, raw_dy: float) -> tuple[int, int]:
         alpha = max(0.0, min(1.0, self.config.smoothing_alpha))

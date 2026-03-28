@@ -9,16 +9,16 @@ private const val KEY_SENSITIVITY_PRESET_INDEX = "sensitivity_preset_index"
 
 object QuestPrefs {
     val sensitivityPresets = floatArrayOf(
-        60f,
-        85f,
-        115f,
-        150f,
-        190f,
+        100f,
+        160f,
         240f,
-        300f,
-        375f,
-        470f,
-        580f,
+        360f,
+        520f,
+        760f,
+        1080f,
+        1500f,
+        2100f,
+        3000f,
     )
 
     private const val DEFAULT_SENSITIVITY_PRESET_INDEX = 5
