@@ -6,6 +6,7 @@ plugins {
 android {
     namespace = "com.gamesinvr.questheadpose"
     compileSdk = 35
+    ndkVersion = "26.3.11579264"
 
     defaultConfig {
         applicationId = "com.gamesinvr.questheadpose"
@@ -15,6 +16,11 @@ android {
         versionName = "0.1.0"
         ndk {
             abiFilters += listOf("arm64-v8a")
+        }
+        externalNativeBuild {
+            cmake {
+                cppFlags += listOf("-std=c++17")
+            }
         }
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -39,9 +45,10 @@ android {
         jvmTarget = "17"
     }
 
-    sourceSets {
-        getByName("main") {
-            jniLibs.srcDirs("src/main/jniLibs")
+    externalNativeBuild {
+        cmake {
+            path = file("src/main/cpp/CMakeLists.txt")
+            version = "3.22.1"
         }
     }
 }
