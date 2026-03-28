@@ -103,12 +103,18 @@ inline EulerDegrees ToEulerDegrees(const XrQuaternionf& orientation) {
     const float z = orientation.z;
     const float w = orientation.w;
 
-    const float yaw =
-        std::atan2(2.0f * (w * y + x * z), 1.0f - 2.0f * (y * y + z * z)) * kRadiansToDegrees;
+    // Derive yaw/pitch from the rotated forward vector so vertical look stays monotonic and
+    // horizontal turn does not collapse into roll-coupled noise.
+    const float forwardX = -2.0f * (x * z + w * y);
+    const float forwardY = 2.0f * (w * x - y * z);
+    const float forwardZ = -1.0f + 2.0f * (x * x + y * y);
+    const float yaw = std::atan2(forwardX, -forwardZ) * kRadiansToDegrees;
     const float pitch =
-        std::asin(std::clamp(2.0f * (w * x - z * y), -1.0f, 1.0f)) * kRadiansToDegrees;
-    const float roll =
-        std::atan2(2.0f * (w * z + x * y), 1.0f - 2.0f * (x * x + z * z)) * kRadiansToDegrees;
+        std::atan2(forwardY, std::sqrt((forwardX * forwardX) + (forwardZ * forwardZ))) * kRadiansToDegrees;
+
+    const float upX = 2.0f * (x * y - w * z);
+    const float upY = 1.0f - 2.0f * (x * x + z * z);
+    const float roll = std::atan2(upX, upY) * kRadiansToDegrees;
 
     return {yaw, pitch, roll};
 }
