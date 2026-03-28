@@ -373,6 +373,10 @@ class HeadposeService : Service(), SensorEventListener {
     }
 
     override fun onTaskRemoved(rootIntent: Intent?) {
+        if (HeadposeRepository.state.value.immersiveActive) {
+            super.onTaskRemoved(rootIntent)
+            return
+        }
         disconnect("Quest app task removed")
         stopSelf()
         super.onTaskRemoved(rootIntent)
