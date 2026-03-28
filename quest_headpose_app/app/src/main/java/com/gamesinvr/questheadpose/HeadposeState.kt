@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.StateFlow
 data class HeadposeState(
     val connected: Boolean = false,
     val receiverAcknowledged: Boolean = false,
+    val mouseArmed: Boolean = false,
     val macIp: String = "",
     val macPort: Int = 7007,
     val questIp: String = "",

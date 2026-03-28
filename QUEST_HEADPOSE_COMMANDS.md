@@ -75,5 +75,6 @@ adb connect 192.168.0.63:5555
 ## Quest App Controls
 
 - Use the Quest app slider for the 10 built-in head-movement sensitivity presets.
+- Wait for `Receiver ready`, then press `Arm Mouse` before expecting injection.
 - Use `Recenter` before testing.
 - Hide the macOS cursor in the target app before expecting mouse injection.

@@ -18,6 +18,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var macPortInput: EditText
     private lateinit var connectButton: Button
     private lateinit var disconnectButton: Button
+    private lateinit var armMouseButton: Button
     private lateinit var recenterButton: Button
     private lateinit var immersiveButton: Button
     private lateinit var sensitivitySlider: Slider
@@ -38,6 +39,7 @@ class MainActivity : AppCompatActivity() {
         macPortInput = findViewById(R.id.macPortInput)
         connectButton = findViewById(R.id.connectButton)
         disconnectButton = findViewById(R.id.disconnectButton)
+        armMouseButton = findViewById(R.id.armMouseButton)
         recenterButton = findViewById(R.id.recenterButton)
         immersiveButton = findViewById(R.id.immersiveButton)
         sensitivitySlider = findViewById(R.id.sensitivitySlider)
@@ -68,6 +70,15 @@ class MainActivity : AppCompatActivity() {
 
         disconnectButton.setOnClickListener {
             startService(Intent(this, HeadposeService::class.java).setAction(HeadposeService.ACTION_DISCONNECT))
+        }
+
+        armMouseButton.setOnClickListener {
+            val newArmedState = !HeadposeRepository.state.value.mouseArmed
+            startService(
+                Intent(this, HeadposeService::class.java)
+                    .setAction(HeadposeService.ACTION_SET_MOUSE_ARMED)
+                    .putExtra(HeadposeService.EXTRA_MOUSE_ARMED, newArmedState),
+            )
         }
 
         recenterButton.setOnClickListener {
@@ -174,6 +185,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun renderState(state: HeadposeState) {
+        armMouseButton.text = if (state.mouseArmed) {
+            getString(R.string.pause_mouse)
+        } else {
+            getString(R.string.arm_mouse)
+        }
         immersiveButton.text = if (state.immersiveActive) {
             getString(R.string.quit_immersive)
         } else {
@@ -182,6 +198,7 @@ class MainActivity : AppCompatActivity() {
 
         val connectionLabel = if (state.connected) "Connected" else "Idle"
         val receiverLabel = if (state.receiverAcknowledged) "Receiver ready" else "Waiting for receiver"
+        val mouseLabel = if (state.mouseArmed) "Armed" else "Paused"
         val openXrLabel = when {
             state.immersiveActive -> "Immersive active"
             state.openXrStatus.startsWith("OpenXR error:", ignoreCase = true) -> state.openXrStatus
@@ -194,6 +211,7 @@ class MainActivity : AppCompatActivity() {
             """
             Connection: $connectionLabel
             Receiver: $receiverLabel
+            Mouse: $mouseLabel
             OpenXR: $openXrLabel
             Sensitivity: ${state.sensitivity.toInt()}
             Yaw: ${decimal.format(state.yaw)}

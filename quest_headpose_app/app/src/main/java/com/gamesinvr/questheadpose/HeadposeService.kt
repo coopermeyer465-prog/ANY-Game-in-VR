@@ -109,6 +109,14 @@ class HeadposeService : Service(), SensorEventListener {
                 )
                 updateSensitivity(requestedSensitivity)
             }
+
+            ACTION_SET_MOUSE_ARMED -> {
+                val requestedArmedState = intent.getBooleanExtra(
+                    EXTRA_MOUSE_ARMED,
+                    HeadposeRepository.state.value.mouseArmed,
+                )
+                updateMouseArmed(requestedArmedState)
+            }
         }
         return START_NOT_STICKY
     }
@@ -175,12 +183,13 @@ class HeadposeService : Service(), SensorEventListener {
                     it.copy(
                         connected = true,
                         receiverAcknowledged = false,
+                        mouseArmed = false,
                         macIp = macIp,
                         macPort = port,
                         questIp = cachedQuestIp,
                         localPort = newSocket.localPort,
                         sensorName = cachedSensorDescription,
-                        lastAckMessage = "Connecting to receiver...",
+                        lastAckMessage = "Connecting to receiver. Arm mouse after the receiver is ready.",
                     )
                 }
                 sendPacket(buildHelloPayload(), resolvedMacAddress, port)
@@ -254,6 +263,7 @@ class HeadposeService : Service(), SensorEventListener {
         HeadposeRepository.update {
             it.copy(
                 receiverAcknowledged = acknowledged,
+                mouseArmed = payload.optBoolean("mouseArmed", it.mouseArmed),
                 sensitivity = newSensitivity,
                 lastAckAtMs = System.currentTimeMillis(),
                 lastAckMessage = payload.optString("message", "Receiver online"),
@@ -300,6 +310,7 @@ class HeadposeService : Service(), SensorEventListener {
             it.copy(
                 connected = false,
                 receiverAcknowledged = false,
+                mouseArmed = false,
                 localPort = 0,
                 lastAckMessage = reason,
             )
@@ -329,6 +340,22 @@ class HeadposeService : Service(), SensorEventListener {
         }
         if (socket != null && macAddress != null) {
             sendPacketAsync(buildSensitivityPayload(sanitizedValue))
+        }
+    }
+
+    private fun updateMouseArmed(value: Boolean) {
+        HeadposeRepository.update { current ->
+            current.copy(
+                mouseArmed = value,
+                lastAckMessage = if (value) {
+                    "Mouse armed for hidden-cursor injection"
+                } else {
+                    "Mouse paused"
+                },
+            )
+        }
+        if (socket != null && macAddress != null) {
+            sendPacketAsync(buildMouseArmedPayload(value))
         }
     }
 
@@ -413,6 +440,7 @@ class HeadposeService : Service(), SensorEventListener {
             .put("questIp", cachedQuestIp)
             .put("questPort", packetSocket.localPort)
             .put("sensitivity", currentState.sensitivity.toDouble())
+            .put("mouseArmed", currentState.mouseArmed)
             .put("yaw", normalizedYaw.toDouble())
             .put("pitch", normalizedPitch.toDouble())
             .put("roll", normalizedRoll.toDouble())
@@ -452,6 +480,7 @@ class HeadposeService : Service(), SensorEventListener {
             .put("sensor", cachedSensorDescription.ifBlank { currentState.sensorName })
             .put("openxr", currentState.openXrStatus)
             .put("sensitivity", currentState.sensitivity.toDouble())
+            .put("mouseArmed", currentState.mouseArmed)
             .toString()
     }
 
@@ -460,6 +489,14 @@ class HeadposeService : Service(), SensorEventListener {
             .put("type", "set_sensitivity")
             .put("questIp", cachedQuestIp.ifBlank { findQuestIp() })
             .put("sensitivity", sensitivity.toDouble())
+            .toString()
+    }
+
+    private fun buildMouseArmedPayload(mouseArmed: Boolean): String {
+        return JSONObject()
+            .put("type", "set_mouse_armed")
+            .put("questIp", cachedQuestIp.ifBlank { findQuestIp() })
+            .put("mouseArmed", mouseArmed)
             .toString()
     }
 
@@ -614,10 +651,24 @@ class HeadposeService : Service(), SensorEventListener {
         if (values.size < 3) {
             return null
         }
+        maybeLogRawDirectEuler(values)
         return Pose(
-            yaw = normalizeAngle(values[0]),
-            pitch = normalizeAngle(values[1]),
+            yaw = normalizeAngle(values[1]),
+            pitch = normalizeAngle(values[0]),
             roll = normalizeAngle(values[2]),
+        )
+    }
+
+    private fun maybeLogRawDirectEuler(values: FloatArray) {
+        val nowNs = System.nanoTime()
+        if (nowNs - lastRawImuLogNs < 1_000_000_000L) {
+            return
+        }
+        lastRawImuLogNs = nowNs
+        val raw = values.joinToString(prefix = "[", postfix = "]", limit = 8) { "%.3f".format(it) }
+        Log.i(
+            tag,
+            "Direct Euler raw=$raw mappedYaw=${"%.3f".format(values[1])} mappedPitch=${"%.3f".format(values[0])} mappedRoll=${"%.3f".format(values[2])}",
         )
     }
 
@@ -728,8 +779,10 @@ class HeadposeService : Service(), SensorEventListener {
         const val ACTION_DISCONNECT = "com.gamesinvr.questheadpose.DISCONNECT"
         const val ACTION_RECENTER = "com.gamesinvr.questheadpose.RECENTER"
         const val ACTION_SET_SENSITIVITY = "com.gamesinvr.questheadpose.SET_SENSITIVITY"
+        const val ACTION_SET_MOUSE_ARMED = "com.gamesinvr.questheadpose.SET_MOUSE_ARMED"
         const val EXTRA_MAC_IP = "mac_ip"
         const val EXTRA_MAC_PORT = "mac_port"
         const val EXTRA_SENSITIVITY = "sensitivity"
+        const val EXTRA_MOUSE_ARMED = "mouse_armed"
     }
 }

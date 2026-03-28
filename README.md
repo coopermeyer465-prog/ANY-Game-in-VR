@@ -3,7 +3,7 @@
 `Quest Headpose` is a Quest window app plus a macOS terminal receiver.
 
 - The Quest app streams headpose in window mode and in the black OpenXR immersive mode.
-- The macOS receiver listens on UDP and injects mouse motion only while the macOS cursor is hidden.
+- The macOS receiver listens on UDP and injects mouse motion only when the Quest app is armed and the macOS cursor is hidden.
 - The Quest app now has a 10-preset sensitivity slider for live tuning.
 
 ## Project Layout
@@ -121,12 +121,15 @@ Then in the headset:
 
 1. Open `Quest Headpose`
 2. Press `Connect`
-3. Hide the macOS cursor in the target app or game
-4. Tune the 10-step sensitivity slider in the Quest app if needed
+3. Wait for `Receiver ready`
+4. Press `Arm Mouse`
+5. Hide the macOS cursor in the target app or game
+6. Tune the 10-step sensitivity slider in the Quest app if needed
 
 ## Quest App Notes
 
 - `Connect`, `Disconnect`, `Recenter`, and `Enter Immersive` are all in the window UI.
+- `Arm Mouse` must be enabled before the receiver can inject motion.
 - The immersive mode is a black OpenXR scene for now.
 - Closing the Quest app task disconnects automatically.
 - The sensitivity slider stores its selected preset on the headset and reapplies it on reconnect.

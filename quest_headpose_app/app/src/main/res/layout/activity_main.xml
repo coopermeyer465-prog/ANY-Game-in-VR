@@ -115,10 +115,19 @@
                         android:orientation="horizontal">
 
                         <Button
+                            android:id="@+id/armMouseButton"
+                            style="@style/Widget.QuestHeadpose.Button.Primary"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/arm_mouse" />
+
+                        <Button
                             android:id="@+id/recenterButton"
                             style="@style/Widget.QuestHeadpose.Button"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
                             android:layout_weight="1"
                             android:text="@string/recenter" />
 
