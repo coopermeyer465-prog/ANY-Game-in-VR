@@ -155,6 +155,9 @@ class Receiver:
         self.smoothed_yaw = 0.0
         self.smoothed_pitch = 0.0
         self.pose_initialized = False
+        self.motion_initialized = False
+        self.last_motion_yaw = 0.0
+        self.last_motion_pitch = 0.0
         self.last_cursor_visible = True
         self.last_packet_at = 0.0
         self.last_heartbeat_at = 0.0
@@ -311,22 +314,18 @@ class Receiver:
         pitch = float(message.get("pitch", 0.0))
         smoothed_yaw, smoothed_pitch = self.smooth_pose(yaw, pitch)
         cursor_visible = self.injector.is_cursor_visible()
-        target_dx = self.shape_axis(
-            smoothed_yaw,
-            self.config.yaw_deadzone_deg,
-            self.config.yaw_scale,
-        )
-        target_dy = self.shape_axis(
-            smoothed_pitch,
-            self.config.pitch_deadzone_deg,
-            -self.config.pitch_scale,
-        )
+        target_dx, target_dy = self.relative_motion(smoothed_yaw, smoothed_pitch)
         if cursor_visible and not self.config.visible_cursor_test:
             self.reset_motion_state()
             dx = 0
             dy = 0
         else:
-            dx, dy = self.step_toward_target(target_dx, target_dy)
+            dx = self.quantize_axis(
+                max(-self.config.max_step_pixels, min(self.config.max_step_pixels, target_dx))
+            )
+            dy = self.quantize_axis(
+                max(-self.config.max_step_pixels, min(self.config.max_step_pixels, target_dy))
+            )
             self.injector.inject(dx, dy)
         self.last_cursor_visible = cursor_visible
 
@@ -346,7 +345,7 @@ class Receiver:
             gate = "injecting"
             status_message = "Injecting hidden-cursor motion"
         print(
-            f"[{uptime}s] {quest_ip} mode={mode} yaw={yaw:.2f} pitch={pitch:.2f} target=({target_dx:.2f},{target_dy:.2f}) step=({dx},{dy}) {gate}",
+            f"[{uptime}s] {quest_ip} mode={mode} yaw={yaw:.2f} pitch={pitch:.2f} rel=({target_dx:.2f},{target_dy:.2f}) step=({dx},{dy}) {gate}",
             flush=True,
         )
         self.send_status(status_message)
@@ -415,18 +414,23 @@ class Receiver:
         if magnitude <= deadzone_deg:
             return 0.0
         adjusted = magnitude - deadzone_deg
-        return math.copysign(adjusted * (self.config.sensitivity * 0.04) * axis_scale, delta_deg)
+        return math.copysign(adjusted * (self.config.sensitivity * 0.012) * axis_scale, delta_deg)
 
-    def step_toward_target(self, target_dx: float, target_dy: float) -> tuple[int, int]:
-        remaining_dx = target_dx - self.output_dx
-        remaining_dy = target_dy - self.output_dy
-        clamped_dx = max(-self.config.max_step_pixels, min(self.config.max_step_pixels, remaining_dx))
-        clamped_dy = max(-self.config.max_step_pixels, min(self.config.max_step_pixels, remaining_dy))
-        dx = self.quantize_axis(clamped_dx)
-        dy = self.quantize_axis(clamped_dy)
-        self.output_dx += dx
-        self.output_dy += dy
-        return dx, dy
+    def relative_motion(self, yaw: float, pitch: float) -> tuple[float, float]:
+        if not self.motion_initialized:
+            self.last_motion_yaw = yaw
+            self.last_motion_pitch = pitch
+            self.motion_initialized = True
+            return 0.0, 0.0
+
+        yaw_delta = self.normalize_angle(yaw - self.last_motion_yaw)
+        pitch_delta = pitch - self.last_motion_pitch
+        self.last_motion_yaw = yaw
+        self.last_motion_pitch = pitch
+        return (
+            self.shape_axis(yaw_delta, self.config.yaw_deadzone_deg, self.config.yaw_scale),
+            self.shape_axis(pitch_delta, self.config.pitch_deadzone_deg, -self.config.pitch_scale),
+        )
 
     def quantize_axis(self, value: float) -> int:
         if abs(value) < 0.5:
@@ -442,6 +446,7 @@ class Receiver:
         self.output_dx = 0.0
         self.output_dy = 0.0
         self.pose_initialized = False
+        self.motion_initialized = False
 
     def smooth_pose(self, yaw: float, pitch: float) -> tuple[float, float]:
         alpha = max(0.03, min(0.14, self.config.smoothing_alpha))
