@@ -319,7 +319,7 @@ class Receiver:
         target_dy = self.shape_axis(
             smoothed_pitch,
             self.config.pitch_deadzone_deg,
-            self.config.pitch_scale,
+            -self.config.pitch_scale,
         )
         if cursor_visible and not self.config.visible_cursor_test:
             self.reset_motion_state()
