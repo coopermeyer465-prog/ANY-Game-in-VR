@@ -7,6 +7,9 @@ private const val KEY_MAC_IP = "mac_ip"
 private const val KEY_MAC_PORT = "mac_port"
 private const val KEY_SENSITIVITY_PRESET_INDEX = "sensitivity_preset_index"
 private const val KEY_SHOULD_CONNECT = "should_connect"
+private const val KEY_RECEIVER_ACKNOWLEDGED = "receiver_acknowledged"
+private const val KEY_RECEIVER_ACK_AT_MS = "receiver_ack_at_ms"
+private const val KEY_RECEIVER_MESSAGE = "receiver_message"
 
 object QuestPrefs {
     val sensitivityPresets = floatArrayOf(
@@ -68,6 +71,44 @@ object QuestPrefs {
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
             .edit()
             .putBoolean(KEY_SHOULD_CONNECT, shouldConnect)
+            .apply()
+    }
+
+    fun getReceiverAcknowledged(context: Context): Boolean {
+        return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .getBoolean(KEY_RECEIVER_ACKNOWLEDGED, false)
+    }
+
+    fun getReceiverAckAtMs(context: Context): Long {
+        return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .getLong(KEY_RECEIVER_ACK_AT_MS, 0L)
+    }
+
+    fun getReceiverMessage(context: Context): String {
+        return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .getString(KEY_RECEIVER_MESSAGE, "No receiver reply yet") ?: "No receiver reply yet"
+    }
+
+    fun saveReceiverStatus(
+        context: Context,
+        acknowledged: Boolean,
+        ackAtMs: Long,
+        message: String,
+    ) {
+        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .edit()
+            .putBoolean(KEY_RECEIVER_ACKNOWLEDGED, acknowledged)
+            .putLong(KEY_RECEIVER_ACK_AT_MS, ackAtMs)
+            .putString(KEY_RECEIVER_MESSAGE, message)
+            .apply()
+    }
+
+    fun clearReceiverStatus(context: Context, message: String = "No receiver reply yet") {
+        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .edit()
+            .putBoolean(KEY_RECEIVER_ACKNOWLEDGED, false)
+            .putLong(KEY_RECEIVER_ACK_AT_MS, 0L)
+            .putString(KEY_RECEIVER_MESSAGE, message)
             .apply()
     }
 

@@ -274,6 +274,12 @@ class OpenXrActivity : NativeActivity() {
                         openXrStatus = "OpenXR session active; receiver link established",
                     )
                 }
+                QuestPrefs.saveReceiverStatus(
+                    this@OpenXrActivity,
+                    acknowledged = true,
+                    ackAtMs = System.currentTimeMillis(),
+                    message = "Receiver link established",
+                )
                 sendPacket(buildHelloPayload())
                 Log.i(tag, "OpenXR TCP sender connected to $requestedMacIp:$requestedPort from ${newSocket.localPort}")
             } catch (error: Exception) {
@@ -286,6 +292,10 @@ class OpenXrActivity : NativeActivity() {
                         lastAckMessage = "Connect failed: ${error.message ?: error::class.java.simpleName}",
                     )
                 }
+                QuestPrefs.clearReceiverStatus(
+                    this@OpenXrActivity,
+                    message = "Connect failed: ${error.message ?: error::class.java.simpleName}",
+                )
             }
         }
     }
@@ -354,11 +364,20 @@ class OpenXrActivity : NativeActivity() {
             handshakeJob?.cancel()
             handshakeJob = null
         }
+        val ackAtMs = System.currentTimeMillis()
+        val acknowledged = payload.optBoolean("receiverRunning", false)
+        val message = payload.optString("message", "Receiver online")
+        QuestPrefs.saveReceiverStatus(
+            this,
+            acknowledged = acknowledged,
+            ackAtMs = ackAtMs,
+            message = message,
+        )
         HeadposeRepository.update {
             it.copy(
-                receiverAcknowledged = payload.optBoolean("receiverRunning", false),
-                lastAckAtMs = System.currentTimeMillis(),
-                lastAckMessage = payload.optString("message", "Receiver online"),
+                receiverAcknowledged = acknowledged,
+                lastAckAtMs = ackAtMs,
+                lastAckMessage = message,
             )
         }
     }
@@ -505,6 +524,9 @@ class OpenXrActivity : NativeActivity() {
         lastYaw = 0f
         lastPitch = 0f
         Log.i(tag, "OpenXR networking shut down: $reason clearConnected=$clearConnected")
+        if (clearConnected) {
+            QuestPrefs.clearReceiverStatus(this, reason)
+        }
         HeadposeRepository.update { current ->
             current.copy(
                 connected = if (clearConnected) false else current.connected,

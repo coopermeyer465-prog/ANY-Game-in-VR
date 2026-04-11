@@ -50,7 +50,20 @@ class MainActivity : AppCompatActivity() {
         macPortInput.setText(QuestPrefs.getMacPort(this).toString())
         val savedSensitivityIndex = QuestPrefs.getSensitivityPresetIndex(this)
         val savedSensitivity = sensitivityPresets[savedSensitivityIndex]
-        HeadposeRepository.update { it.copy(sensitivity = savedSensitivity) }
+        val savedReceiverAck = QuestPrefs.getReceiverAcknowledged(this)
+        val savedReceiverAckAtMs = QuestPrefs.getReceiverAckAtMs(this)
+        val savedReceiverMessage = QuestPrefs.getReceiverMessage(this)
+        HeadposeRepository.update {
+            it.copy(
+                sensitivity = savedSensitivity,
+                connected = QuestPrefs.getShouldConnect(this),
+                macIp = QuestPrefs.getMacIp(this),
+                macPort = QuestPrefs.getMacPort(this),
+                receiverAcknowledged = savedReceiverAck,
+                lastAckAtMs = savedReceiverAckAtMs,
+                lastAckMessage = savedReceiverMessage,
+            )
+        }
         syncSensitivitySlider(savedSensitivityIndex, savedSensitivity)
         applyLaunchExtras(intent)
 
@@ -207,7 +220,12 @@ class MainActivity : AppCompatActivity() {
         }
 
         val connectionLabel = if (state.connected) "Connected" else "Idle"
-        val receiverReady = state.receiverAcknowledged || (state.connected && state.localPort > 0)
+        val recentPersistedAck =
+            QuestPrefs.getReceiverAcknowledged(this) &&
+                (System.currentTimeMillis() - QuestPrefs.getReceiverAckAtMs(this) <= 5000L)
+        val receiverReady = state.receiverAcknowledged ||
+            (state.connected && state.localPort > 0) ||
+            recentPersistedAck
         val receiverLabel = if (receiverReady) "Receiver ready" else "Waiting for receiver"
         val openXrLabel = state.openXrStatus
         val presetIndex = QuestPrefs.nearestSensitivityPresetIndex(state.sensitivity)
