@@ -5,6 +5,7 @@ import math
 import signal
 import socket
 import sys
+import threading
 import time
 from pathlib import Path
 
@@ -137,8 +138,16 @@ class Receiver:
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.socket.bind(("0.0.0.0", self.config.listen_port))
         self.socket.settimeout(1.0)
+        self.tcp_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.tcp_server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.tcp_server.bind(("0.0.0.0", self.config.listen_port))
+        self.tcp_server.listen(1)
+        self.tcp_server.settimeout(1.0)
         self.injector = MouseInjector()
         self.quest_addr: tuple[str, int] | None = None
+        self.reply_transport = "udp"
+        self.tcp_conn: socket.socket | None = None
+        self.tcp_lock = threading.Lock()
         self.receiver_start = time.time()
         self.reload_requested = False
         self.output_dx = 0.0
@@ -162,6 +171,7 @@ class Receiver:
 
     def run(self) -> None:
         print(f"Receiver listening on UDP {self.config.listen_port}", flush=True)
+        print(f"Receiver listening on TCP {self.config.listen_port}", flush=True)
         if self.config.mac_ip:
             print(f"Configured Mac IP: {self.config.mac_ip}", flush=True)
         if self.config.quest_ip:
@@ -180,6 +190,8 @@ class Receiver:
         else:
             print("Accessibility permission is required for synthetic mouse movement.", flush=True)
 
+        threading.Thread(target=self.run_tcp_server, daemon=True).start()
+
         while True:
             if self.reload_requested:
                 self.config.reload()
@@ -197,8 +209,64 @@ class Receiver:
                 continue
 
             self.quest_addr = peer
+            self.reply_transport = "udp"
             self.last_packet_at = time.time()
             self.handle_payload(payload)
+
+    def run_tcp_server(self) -> None:
+        while True:
+            try:
+                conn, peer = self.tcp_server.accept()
+            except socket.timeout:
+                continue
+            except Exception:
+                continue
+
+            conn.settimeout(1.0)
+            with self.tcp_lock:
+                old_conn = self.tcp_conn
+                self.tcp_conn = conn
+            if old_conn is not None and old_conn is not conn:
+                try:
+                    old_conn.close()
+                except Exception:
+                    pass
+
+            self.quest_addr = peer
+            self.reply_transport = "tcp"
+            print(f"Quest TCP connected from {peer[0]}:{peer[1]}", flush=True)
+
+            buffer = b""
+            try:
+                while True:
+                    try:
+                        chunk = conn.recv(4096)
+                    except socket.timeout:
+                        continue
+                    if not chunk:
+                        break
+                    buffer += chunk
+                    while b"\n" in buffer:
+                        line, buffer = buffer.split(b"\n", 1)
+                        message = line.strip()
+                        if not message:
+                            continue
+                        self.quest_addr = peer
+                        self.reply_transport = "tcp"
+                        self.last_packet_at = time.time()
+                        self.handle_payload(message)
+            except Exception:
+                pass
+            finally:
+                with self.tcp_lock:
+                    if self.tcp_conn is conn:
+                        self.tcp_conn = None
+                try:
+                    conn.close()
+                except Exception:
+                    pass
+                self.reset_motion_state()
+                print(f"Quest TCP disconnected from {peer[0]}:{peer[1]}", flush=True)
 
     def handle_payload(self, payload: bytes) -> None:
         try:
@@ -284,9 +352,6 @@ class Receiver:
         self.send_status(status_message)
 
     def send_status(self, message: str) -> None:
-        if not self.quest_addr:
-            return
-
         payload = json.dumps(
             {
                 "type": "status",
@@ -296,10 +361,23 @@ class Receiver:
                 "macIp": self.config.mac_ip,
                 "message": message,
             }
-        ).encode("utf-8")
+        ).encode("utf-8") + b"\n"
+
+        if self.reply_transport == "tcp":
+            with self.tcp_lock:
+                conn = self.tcp_conn
+            if conn is not None:
+                try:
+                    conn.sendall(payload)
+                    return
+                except Exception:
+                    pass
+
+        if not self.quest_addr:
+            return
 
         try:
-            self.socket.sendto(payload, self.quest_addr)
+            self.socket.sendto(payload.rstrip(b"\n"), self.quest_addr)
         except Exception:
             pass
 

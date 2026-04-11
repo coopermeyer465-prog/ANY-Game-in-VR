@@ -8,6 +8,10 @@ import android.content.IntentFilter
 import android.os.Bundle
 import android.os.SystemClock
 import android.util.Log
+import java.io.BufferedReader
+import java.io.BufferedWriter
+import java.io.InputStreamReader
+import java.io.OutputStreamWriter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -17,19 +21,19 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.json.JSONObject
-import java.net.DatagramPacket
-import java.net.DatagramSocket
 import java.net.Inet4Address
-import java.net.InetAddress
+import java.net.InetSocketAddress
 import java.net.NetworkInterface
+import java.net.Socket
 import java.util.Collections
 
 class OpenXrActivity : NativeActivity() {
     private val tag = "QuestHeadpose"
     private val activityScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
-    private var socket: DatagramSocket? = null
-    private var macAddress: InetAddress? = null
+    private var socket: Socket? = null
+    private var reader: BufferedReader? = null
+    private var writer: BufferedWriter? = null
     private var macPort: Int = 7007
     private var questIp: String = ""
     private var receiveJob: Job? = null
@@ -234,11 +238,17 @@ class OpenXrActivity : NativeActivity() {
             shutdownNetworking(reason = "Reconnecting", sendReason = false, clearConnected = false)
 
             try {
-                val newSocket = DatagramSocket().apply { soTimeout = 1000 }
-                val resolvedMacAddress = InetAddress.getByName(requestedMacIp)
+                val newSocket = Socket().apply {
+                    connect(InetSocketAddress(requestedMacIp, requestedPort), 1500)
+                    soTimeout = 1000
+                    tcpNoDelay = true
+                }
+                val newReader = BufferedReader(InputStreamReader(newSocket.getInputStream(), Charsets.UTF_8))
+                val newWriter = BufferedWriter(OutputStreamWriter(newSocket.getOutputStream(), Charsets.UTF_8))
 
                 socket = newSocket
-                macAddress = resolvedMacAddress
+                reader = newReader
+                writer = newWriter
                 macPort = requestedPort
                 questIp = findQuestIp()
                 yawOffset = 0f
@@ -247,9 +257,9 @@ class OpenXrActivity : NativeActivity() {
                 lastYaw = 0f
                 lastPitch = 0f
 
-                startReceiveLoop(newSocket)
-                startHandshakeLoop(newSocket, resolvedMacAddress, requestedPort)
-                startPoseStreamLoop(newSocket, resolvedMacAddress, requestedPort)
+                startReceiveLoop(newSocket, newReader)
+                startHandshakeLoop()
+                startPoseStreamLoop()
                 HeadposeRepository.update {
                     it.copy(
                         connected = true,
@@ -263,10 +273,10 @@ class OpenXrActivity : NativeActivity() {
                         openXrStatus = "OpenXR session active; waiting for tracked pose",
                     )
                 }
-                sendPacket(buildHelloPayload(), newSocket, resolvedMacAddress, requestedPort)
-                Log.i(tag, "OpenXR UDP sender connected to $requestedMacIp:$requestedPort from ${newSocket.localPort}")
+                sendPacket(buildHelloPayload())
+                Log.i(tag, "OpenXR TCP sender connected to $requestedMacIp:$requestedPort from ${newSocket.localPort}")
             } catch (error: Exception) {
-                Log.e(tag, "OpenXR UDP connect failed", error)
+                Log.e(tag, "OpenXR TCP connect failed", error)
                 shutdownNetworking(reason = "Connect failed", sendReason = false, clearConnected = true)
                 HeadposeRepository.update {
                     it.copy(
@@ -279,39 +289,33 @@ class OpenXrActivity : NativeActivity() {
         }
     }
 
-    private fun startReceiveLoop(activeSocket: DatagramSocket) {
+    private fun startReceiveLoop(activeSocket: Socket, activeReader: BufferedReader) {
         receiveJob?.cancel()
         receiveJob = activityScope.launch {
-            val buffer = ByteArray(4096)
             while (isActive && socket === activeSocket && !activeSocket.isClosed) {
                 try {
-                    val packet = DatagramPacket(buffer, buffer.size)
-                    activeSocket.receive(packet)
-                    handleIncoming(String(packet.data, 0, packet.length))
+                    val line = activeReader.readLine() ?: break
+                    handleIncoming(line)
                 } catch (_: java.net.SocketTimeoutException) {
                     // Keep polling so disconnect stays responsive.
                 } catch (error: Exception) {
-                    Log.w(tag, "Receive loop error", error)
+                    Log.w(tag, "TCP receive loop error", error)
                 }
             }
         }
     }
 
-    private fun startHandshakeLoop(
-        activeSocket: DatagramSocket,
-        resolvedMacAddress: InetAddress,
-        port: Int,
-    ) {
+    private fun startHandshakeLoop() {
         handshakeJob?.cancel()
         handshakeJob = activityScope.launch {
             while (
                 isActive &&
-                socket === activeSocket &&
-                !activeSocket.isClosed &&
+                socket != null &&
+                socket?.isClosed == false &&
                 !HeadposeRepository.state.value.receiverAcknowledged
             ) {
                 try {
-                    sendPacket(buildHelloPayload(), activeSocket, resolvedMacAddress, port)
+                    sendPacket(buildHelloPayload())
                 } catch (error: Exception) {
                     Log.w(tag, "Hello retry failed", error)
                 }
@@ -320,19 +324,15 @@ class OpenXrActivity : NativeActivity() {
         }
     }
 
-    private fun startPoseStreamLoop(
-        activeSocket: DatagramSocket,
-        resolvedMacAddress: InetAddress,
-        port: Int,
-    ) {
+    private fun startPoseStreamLoop() {
         streamJob?.cancel()
         streamJob = activityScope.launch {
-            while (isActive && socket === activeSocket && !activeSocket.isClosed) {
+            while (isActive && socket != null && socket?.isClosed == false) {
                 val pose = OpenXrPoseBridge.latestRecentPose(250_000_000L)
                 if (pose == null) {
-                    reportOpenXrInactive(activeSocket)
+                    reportOpenXrInactive()
                 } else {
-                    sendCurrentPose(pose, activeSocket, resolvedMacAddress, port)
+                    sendCurrentPose(pose)
                 }
                 delay(8)
             }
@@ -362,7 +362,7 @@ class OpenXrActivity : NativeActivity() {
         }
     }
 
-    private fun reportOpenXrInactive(activeSocket: DatagramSocket) {
+    private fun reportOpenXrInactive() {
         val nowNs = SystemClock.elapsedRealtimeNanos()
         if (nowNs - lastUiUpdateNs < 100_000_000L) {
             return
@@ -371,18 +371,13 @@ class OpenXrActivity : NativeActivity() {
         HeadposeRepository.update {
             it.copy(
                 questIp = questIp.ifBlank { findQuestIp() },
-                localPort = activeSocket.localPort,
+                localPort = socket?.localPort ?: 0,
                 openXrStatus = "OpenXR session starting or paused",
             )
         }
     }
 
-    private fun sendCurrentPose(
-        frame: OpenXrPoseFrame,
-        activeSocket: DatagramSocket,
-        resolvedMacAddress: InetAddress,
-        port: Int,
-    ) {
+    private fun sendCurrentPose(frame: OpenXrPoseFrame) {
         val yaw = normalizeAngle(frame.yaw - yawOffset)
         val pitch = normalizeAngle(frame.pitch - pitchOffset)
         val roll = normalizeAngle(frame.roll - rollOffset)
@@ -402,7 +397,7 @@ class OpenXrActivity : NativeActivity() {
                     roll = roll,
                     lastPacketAtMs = System.currentTimeMillis(),
                     questIp = questIp.ifBlank { findQuestIp() },
-                    localPort = activeSocket.localPort,
+                    localPort = socket?.localPort ?: 0,
                     sensorName = "OpenXR tracked head pose",
                     openXrStatus = "OpenXR tracked head pose active",
                 )
@@ -413,7 +408,7 @@ class OpenXrActivity : NativeActivity() {
             .put("type", "headpose")
             .put("mode", "openxr")
             .put("questIp", questIp.ifBlank { findQuestIp() })
-            .put("questPort", activeSocket.localPort)
+            .put("questPort", socket?.localPort ?: 0)
             .put("sensitivity", HeadposeRepository.state.value.sensitivity.toDouble())
             .put("yaw", yaw.toDouble())
             .put("pitch", pitch.toDouble())
@@ -424,9 +419,9 @@ class OpenXrActivity : NativeActivity() {
             .toString()
 
         try {
-            sendPacket(payload, activeSocket, resolvedMacAddress, port)
+            sendPacket(payload)
         } catch (error: Exception) {
-            Log.e(tag, "OpenXR pose send failed", error)
+            Log.e(tag, "OpenXR TCP send failed", error)
             HeadposeRepository.update {
                 it.copy(lastAckMessage = "Pose send failed: ${error.message ?: error::class.java.simpleName}")
             }
@@ -446,30 +441,19 @@ class OpenXrActivity : NativeActivity() {
         sendPacketAsync(buildRecenterPayload())
     }
 
-    private fun sendPacket(
-        payload: String,
-        activeSocket: DatagramSocket? = socket,
-        address: InetAddress? = macAddress,
-        port: Int = macPort,
-    ) {
-        val resolvedSocket = activeSocket ?: return
-        val resolvedAddress = address ?: return
-        val bytes = payload.toByteArray(Charsets.UTF_8)
-        val packet = DatagramPacket(bytes, bytes.size, resolvedAddress, port)
-        resolvedSocket.send(packet)
+    private fun sendPacket(payload: String) {
+        val activeWriter = writer ?: return
+        activeWriter.write(payload)
+        activeWriter.newLine()
+        activeWriter.flush()
     }
 
-    private fun sendPacketAsync(
-        payload: String,
-        activeSocket: DatagramSocket? = socket,
-        address: InetAddress? = macAddress,
-        port: Int = macPort,
-    ) {
+    private fun sendPacketAsync(payload: String) {
         activityScope.launch {
             try {
-                sendPacket(payload, activeSocket, address, port)
+                sendPacket(payload)
             } catch (error: Exception) {
-                Log.e(tag, "OpenXR async send failed", error)
+                Log.e(tag, "OpenXR TCP async send failed", error)
             }
         }
     }
@@ -480,10 +464,8 @@ class OpenXrActivity : NativeActivity() {
         clearConnected: Boolean,
     ) {
         val activeSocket = socket
-        val activeAddress = macAddress
-        val activePort = macPort
 
-        if (sendReason && activeSocket != null && activeAddress != null && !activeSocket.isClosed) {
+        if (sendReason && activeSocket != null && !activeSocket.isClosed) {
             try {
                 sendPacket(
                     JSONObject()
@@ -491,9 +473,6 @@ class OpenXrActivity : NativeActivity() {
                         .put("reason", reason)
                         .put("questIp", questIp.ifBlank { findQuestIp() })
                         .toString(),
-                    activeSocket,
-                    activeAddress,
-                    activePort,
                 )
             } catch (_: Exception) {
                 // Best effort.
@@ -506,9 +485,21 @@ class OpenXrActivity : NativeActivity() {
         receiveJob = null
         handshakeJob = null
         streamJob = null
-        activeSocket?.close()
+        try {
+            reader?.close()
+        } catch (_: Exception) {
+        }
+        try {
+            writer?.close()
+        } catch (_: Exception) {
+        }
+        try {
+            activeSocket?.close()
+        } catch (_: Exception) {
+        }
         socket = null
-        macAddress = null
+        reader = null
+        writer = null
         lastYaw = 0f
         lastPitch = 0f
         Log.i(tag, "OpenXR networking shut down: $reason clearConnected=$clearConnected")
