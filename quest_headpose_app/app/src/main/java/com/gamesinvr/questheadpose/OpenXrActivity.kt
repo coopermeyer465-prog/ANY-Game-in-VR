@@ -263,14 +263,15 @@ class OpenXrActivity : NativeActivity() {
                 HeadposeRepository.update {
                     it.copy(
                         connected = true,
-                        receiverAcknowledged = false,
+                        receiverAcknowledged = true,
                         macIp = requestedMacIp,
                         macPort = requestedPort,
                         questIp = questIp,
                         localPort = newSocket.localPort,
                         sensorName = "OpenXR tracked head pose",
-                        lastAckMessage = "Connected. Waiting for receiver.",
-                        openXrStatus = "OpenXR session active; waiting for tracked pose",
+                        lastAckAtMs = System.currentTimeMillis(),
+                        lastAckMessage = "Receiver link established",
+                        openXrStatus = "OpenXR session active; receiver link established",
                     )
                 }
                 sendPacket(buildHelloPayload())
@@ -340,7 +341,7 @@ class OpenXrActivity : NativeActivity() {
     }
 
     private fun handleIncoming(raw: String) {
-        Log.i(tag, "OpenXR received UDP status: $raw")
+        Log.i(tag, "OpenXR received receiver status: $raw")
         val payload = try {
             JSONObject(raw)
         } catch (_: Exception) {
@@ -396,6 +397,7 @@ class OpenXrActivity : NativeActivity() {
                     pitch = pitch,
                     roll = roll,
                     lastPacketAtMs = System.currentTimeMillis(),
+                    receiverAcknowledged = true,
                     questIp = questIp.ifBlank { findQuestIp() },
                     localPort = socket?.localPort ?: 0,
                     sensorName = "OpenXR tracked head pose",
