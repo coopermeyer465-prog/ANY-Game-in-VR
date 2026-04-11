@@ -6,7 +6,6 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -59,27 +58,49 @@ class MainActivity : AppCompatActivity() {
             val macIp = macIpInput.text.toString().trim()
             val macPort = macPortInput.text.toString().toIntOrNull() ?: 7007
             QuestPrefs.saveMacTarget(this, macIp, macPort)
-            ContextCompat.startForegroundService(
-                this,
-                Intent(this, HeadposeService::class.java)
-                    .setAction(HeadposeService.ACTION_CONNECT)
-                    .putExtra(HeadposeService.EXTRA_MAC_IP, macIp)
-                    .putExtra(HeadposeService.EXTRA_MAC_PORT, macPort),
-            )
+            HeadposeRepository.update { current ->
+                current.copy(
+                    connected = macIp.isNotBlank(),
+                    receiverAcknowledged = false,
+                    macIp = macIp,
+                    macPort = macPort,
+                    lastAckMessage = if (macIp.isBlank()) {
+                        "Enter the Mac IP before connecting"
+                    } else if (current.immersiveActive) {
+                        "Connecting to receiver from OpenXR"
+                    } else {
+                        "Receiver target saved. Enter OpenXR to start streaming."
+                    },
+                )
+            }
+            if (macIp.isNotBlank()) {
+                OpenXrActivity.requestConnect(this, macIp, macPort)
+            }
         }
 
         disconnectButton.setOnClickListener {
-            ContextCompat.startForegroundService(
-                this,
-                Intent(this, HeadposeService::class.java).setAction(HeadposeService.ACTION_DISCONNECT),
-            )
+            HeadposeRepository.update { current ->
+                current.copy(
+                    connected = false,
+                    receiverAcknowledged = false,
+                    localPort = 0,
+                    lastAckMessage = "Disconnected",
+                )
+            }
+            OpenXrActivity.requestDisconnect(this)
         }
 
         recenterButton.setOnClickListener {
-            ContextCompat.startForegroundService(
-                this,
-                Intent(this, HeadposeService::class.java).setAction(HeadposeService.ACTION_RECENTER),
-            )
+            HeadposeRepository.update { current ->
+                current.copy(
+                    lastAckMessage = if (current.immersiveActive) {
+                        "Recentering tracked head pose"
+                    } else {
+                        "Recenter will apply when OpenXR is active"
+                    },
+                )
+            }
+            OpenXrActivity.requestRecenter(this)
         }
 
         immersiveButton.setOnClickListener {
@@ -157,14 +178,7 @@ class MainActivity : AppCompatActivity() {
             )
         }
         updateSensitivityLabel(presetIndex, sensitivity)
-        if (HeadposeRepository.state.value.connected) {
-            ContextCompat.startForegroundService(
-                this,
-                Intent(this, HeadposeService::class.java)
-                    .setAction(HeadposeService.ACTION_SET_SENSITIVITY)
-                    .putExtra(HeadposeService.EXTRA_SENSITIVITY, sensitivity),
-            )
-        }
+        OpenXrActivity.notifySensitivityChanged(this, sensitivity)
     }
 
     private fun syncSensitivitySlider(index: Int, sensitivity: Float) {
