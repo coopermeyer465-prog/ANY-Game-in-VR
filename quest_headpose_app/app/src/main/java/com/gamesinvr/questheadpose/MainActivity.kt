@@ -58,6 +58,7 @@ class MainActivity : AppCompatActivity() {
             val macIp = macIpInput.text.toString().trim()
             val macPort = macPortInput.text.toString().toIntOrNull() ?: 7007
             QuestPrefs.saveMacTarget(this, macIp, macPort)
+            QuestPrefs.saveShouldConnect(this, macIp.isNotBlank())
             HeadposeRepository.update { current ->
                 current.copy(
                     connected = macIp.isNotBlank(),
@@ -79,6 +80,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         disconnectButton.setOnClickListener {
+            QuestPrefs.saveShouldConnect(this, false)
             HeadposeRepository.update { current ->
                 current.copy(
                     connected = false,

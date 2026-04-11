@@ -6,6 +6,7 @@ private const val PREFS_NAME = "quest_headpose"
 private const val KEY_MAC_IP = "mac_ip"
 private const val KEY_MAC_PORT = "mac_port"
 private const val KEY_SENSITIVITY_PRESET_INDEX = "sensitivity_preset_index"
+private const val KEY_SHOULD_CONNECT = "should_connect"
 
 object QuestPrefs {
     val sensitivityPresets = floatArrayOf(
@@ -55,6 +56,18 @@ object QuestPrefs {
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
             .edit()
             .putInt(KEY_SENSITIVITY_PRESET_INDEX, index.coerceIn(0, sensitivityPresets.lastIndex))
+            .apply()
+    }
+
+    fun getShouldConnect(context: Context): Boolean {
+        return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .getBoolean(KEY_SHOULD_CONNECT, false)
+    }
+
+    fun saveShouldConnect(context: Context, shouldConnect: Boolean) {
+        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .edit()
+            .putBoolean(KEY_SHOULD_CONNECT, shouldConnect)
             .apply()
     }
 

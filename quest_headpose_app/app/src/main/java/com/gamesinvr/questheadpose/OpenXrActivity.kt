@@ -41,6 +41,7 @@ class OpenXrActivity : NativeActivity() {
     private var lastYaw = 0f
     private var lastPitch = 0f
     private var lastUiUpdateNs = 0L
+    private var lastPoseLogNs = 0L
 
     private val closeReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -93,6 +94,13 @@ class OpenXrActivity : NativeActivity() {
         )
 
         questIp = findQuestIp()
+        val savedMacIp = QuestPrefs.getMacIp(this)
+        val savedMacPort = QuestPrefs.getMacPort(this)
+        val shouldConnect = QuestPrefs.getShouldConnect(this)
+        Log.i(
+            tag,
+            "OpenXR onCreate immersive=true shouldConnect=$shouldConnect savedMacIp=$savedMacIp savedMacPort=$savedMacPort repoConnected=${HeadposeRepository.state.value.connected}",
+        )
         HeadposeRepository.update { current ->
             current.copy(
                 immersiveActive = true,
@@ -106,8 +114,15 @@ class OpenXrActivity : NativeActivity() {
             )
         }
 
-        if (HeadposeRepository.state.value.connected) {
-            startOrReconnectNetworking()
+        if (shouldConnect && savedMacIp.isNotBlank()) {
+            HeadposeRepository.update {
+                it.copy(
+                    connected = true,
+                    macIp = savedMacIp,
+                    macPort = savedMacPort,
+                )
+            }
+            startOrReconnectNetworking(savedMacIp, savedMacPort)
         }
     }
 
@@ -140,21 +155,32 @@ class OpenXrActivity : NativeActivity() {
     }
 
     fun onNativeOpenXrReady(runtimeName: String) {
+        Log.i(tag, "OpenXR runtime ready: $runtimeName")
         HeadposeRepository.update { current ->
             current.copy(
                 immersiveActive = true,
                 openXrStatus = "OpenXR session active: $runtimeName",
             )
         }
-        if (HeadposeRepository.state.value.connected && socket == null) {
-            startOrReconnectNetworking()
+        val savedMacIp = QuestPrefs.getMacIp(this)
+        val savedMacPort = QuestPrefs.getMacPort(this)
+        if ((HeadposeRepository.state.value.connected || QuestPrefs.getShouldConnect(this)) &&
+            socket == null &&
+            savedMacIp.isNotBlank()
+        ) {
+            startOrReconnectNetworking(savedMacIp, savedMacPort)
         }
     }
 
     fun onNativeOpenXrPose(yaw: Float, pitch: Float, roll: Float) {
         OpenXrPoseBridge.updatePose(yaw, pitch, roll)
-        if (SystemClock.elapsedRealtimeNanos() - lastUiUpdateNs >= 100_000_000L) {
-            lastUiUpdateNs = SystemClock.elapsedRealtimeNanos()
+        val nowNs = SystemClock.elapsedRealtimeNanos()
+        if (nowNs - lastPoseLogNs >= 1_000_000_000L) {
+            lastPoseLogNs = nowNs
+            Log.i(tag, "OpenXR pose callback yaw=$yaw pitch=$pitch roll=$roll")
+        }
+        if (nowNs - lastUiUpdateNs >= 100_000_000L) {
+            lastUiUpdateNs = nowNs
             HeadposeRepository.update { current ->
                 current.copy(
                     yaw = yaw,
@@ -192,6 +218,7 @@ class OpenXrActivity : NativeActivity() {
         requestedMacIp: String = HeadposeRepository.state.value.macIp.ifBlank { QuestPrefs.getMacIp(this) },
         requestedPort: Int = HeadposeRepository.state.value.macPort.takeIf { it > 0 } ?: QuestPrefs.getMacPort(this),
     ) {
+        Log.i(tag, "OpenXR startOrReconnectNetworking macIp=$requestedMacIp port=$requestedPort")
         if (requestedMacIp.isBlank()) {
             HeadposeRepository.update {
                 it.copy(
@@ -313,6 +340,7 @@ class OpenXrActivity : NativeActivity() {
     }
 
     private fun handleIncoming(raw: String) {
+        Log.i(tag, "OpenXR received UDP status: $raw")
         val payload = try {
             JSONObject(raw)
         } catch (_: Exception) {
@@ -483,6 +511,7 @@ class OpenXrActivity : NativeActivity() {
         macAddress = null
         lastYaw = 0f
         lastPitch = 0f
+        Log.i(tag, "OpenXR networking shut down: $reason clearConnected=$clearConnected")
         HeadposeRepository.update { current ->
             current.copy(
                 connected = if (clearConnected) false else current.connected,
