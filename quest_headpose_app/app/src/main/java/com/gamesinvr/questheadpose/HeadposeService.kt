@@ -1,7 +1,12 @@
 package com.gamesinvr.questheadpose
 
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
+import android.content.pm.ServiceInfo
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -11,6 +16,8 @@ import android.os.HandlerThread
 import android.os.IBinder
 import android.os.SystemClock
 import android.util.Log
+import androidx.core.app.NotificationCompat
+import androidx.core.app.ServiceCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -79,6 +86,7 @@ class HeadposeService : Service(), SensorEventListener {
 
     override fun onCreate() {
         super.onCreate()
+        ensureForeground()
         cachedQuestIp = findQuestIp()
         cachedSensorDescription = "OpenXR only (no fallback)"
         val savedSensitivity = QuestPrefs.getSensitivity(this)
@@ -90,9 +98,12 @@ class HeadposeService : Service(), SensorEventListener {
                 sensitivity = savedSensitivity,
             )
         }
+        Log.i(tag, "HeadposeService created")
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        ensureForeground()
+        Log.i(tag, "HeadposeService onStartCommand action=${intent?.action ?: "<none>"}")
         when (intent?.action) {
             ACTION_CONNECT -> {
                 val requestedIp = intent.getStringExtra(EXTRA_MAC_IP)?.trim().orEmpty()
@@ -115,7 +126,7 @@ class HeadposeService : Service(), SensorEventListener {
                 updateSensitivity(requestedSensitivity)
             }
         }
-        return START_NOT_STICKY
+        return START_STICKY
     }
 
     private fun connect(macIp: String, port: Int) {
@@ -359,6 +370,7 @@ class HeadposeService : Service(), SensorEventListener {
     }
 
     override fun onDestroy() {
+        Log.i(tag, "HeadposeService destroyed")
         receiveJob?.cancel()
         handshakeJob?.cancel()
         streamJob?.cancel()
@@ -374,6 +386,7 @@ class HeadposeService : Service(), SensorEventListener {
 
     override fun onTaskRemoved(rootIntent: Intent?) {
         if (HeadposeRepository.state.value.immersiveActive) {
+            Log.i(tag, "Task removed while immersive is active; keeping foreground service alive")
             super.onTaskRemoved(rootIntent)
             return
         }
@@ -383,6 +396,53 @@ class HeadposeService : Service(), SensorEventListener {
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
+
+    private fun ensureForeground() {
+        createNotificationChannel()
+        ServiceCompat.startForeground(
+            this,
+            NOTIFICATION_ID,
+            buildNotification(),
+            ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC,
+        )
+    }
+
+    private fun createNotificationChannel() {
+        val manager = getSystemService(NotificationManager::class.java) ?: return
+        if (manager.getNotificationChannel(NOTIFICATION_CHANNEL_ID) != null) {
+            return
+        }
+        manager.createNotificationChannel(
+            NotificationChannel(
+                NOTIFICATION_CHANNEL_ID,
+                "Quest Headpose",
+                NotificationManager.IMPORTANCE_LOW,
+            ).apply {
+                description = "Keeps Quest Headpose alive while OpenXR is streaming"
+                setShowBadge(false)
+            },
+        )
+    }
+
+    private fun buildNotification(): Notification {
+        val reopenIntent = Intent(this, MainActivity::class.java)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+        val contentIntent = PendingIntent.getActivity(
+            this,
+            0,
+            reopenIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
+        return NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
+            .setContentTitle("Quest Headpose")
+            .setContentText("OpenXR sender service is running")
+            .setSmallIcon(android.R.drawable.ic_menu_compass)
+            .setOngoing(true)
+            .setOnlyAlertOnce(true)
+            .setSilent(true)
+            .setContentIntent(contentIntent)
+            .build()
+    }
 
     override fun onSensorChanged(event: SensorEvent?) {
         val sensorEvent = event ?: return
@@ -412,8 +472,8 @@ class HeadposeService : Service(), SensorEventListener {
         serviceScope.launch {
             try {
                 sendPacket(payload, address, port)
-            } catch (_: Exception) {
-                // Best effort for live pose streaming. Connect/disconnect paths already report errors.
+            } catch (error: Exception) {
+                Log.e(tag, "Async send failed", error)
             }
         }
     }
@@ -532,8 +592,8 @@ class HeadposeService : Service(), SensorEventListener {
 
         try {
             sendPacket(payload, currentMac, port)
-        } catch (_: Exception) {
-            // Best effort for live pose streaming.
+        } catch (error: Exception) {
+            Log.e(tag, "Pose send failed", error)
         }
     }
 
@@ -870,6 +930,8 @@ class HeadposeService : Service(), SensorEventListener {
     companion object {
         private const val HEAD_TRACKER_TYPE = 37
         private const val QUEST_HMD_IMU_TYPE = 65537
+        private const val NOTIFICATION_CHANNEL_ID = "quest_headpose_service"
+        private const val NOTIFICATION_ID = 1001
         const val ACTION_CONNECT = "com.gamesinvr.questheadpose.CONNECT"
         const val ACTION_DISCONNECT = "com.gamesinvr.questheadpose.DISCONNECT"
         const val ACTION_RECENTER = "com.gamesinvr.questheadpose.RECENTER"

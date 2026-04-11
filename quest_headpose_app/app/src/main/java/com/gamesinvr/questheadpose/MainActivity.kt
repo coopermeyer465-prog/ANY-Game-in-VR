@@ -6,6 +6,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -58,7 +59,8 @@ class MainActivity : AppCompatActivity() {
             val macIp = macIpInput.text.toString().trim()
             val macPort = macPortInput.text.toString().toIntOrNull() ?: 7007
             QuestPrefs.saveMacTarget(this, macIp, macPort)
-            startService(
+            ContextCompat.startForegroundService(
+                this,
                 Intent(this, HeadposeService::class.java)
                     .setAction(HeadposeService.ACTION_CONNECT)
                     .putExtra(HeadposeService.EXTRA_MAC_IP, macIp)
@@ -67,11 +69,17 @@ class MainActivity : AppCompatActivity() {
         }
 
         disconnectButton.setOnClickListener {
-            startService(Intent(this, HeadposeService::class.java).setAction(HeadposeService.ACTION_DISCONNECT))
+            ContextCompat.startForegroundService(
+                this,
+                Intent(this, HeadposeService::class.java).setAction(HeadposeService.ACTION_DISCONNECT),
+            )
         }
 
         recenterButton.setOnClickListener {
-            startService(Intent(this, HeadposeService::class.java).setAction(HeadposeService.ACTION_RECENTER))
+            ContextCompat.startForegroundService(
+                this,
+                Intent(this, HeadposeService::class.java).setAction(HeadposeService.ACTION_RECENTER),
+            )
         }
 
         immersiveButton.setOnClickListener {
@@ -150,7 +158,8 @@ class MainActivity : AppCompatActivity() {
         }
         updateSensitivityLabel(presetIndex, sensitivity)
         if (HeadposeRepository.state.value.connected) {
-            startService(
+            ContextCompat.startForegroundService(
+                this,
                 Intent(this, HeadposeService::class.java)
                     .setAction(HeadposeService.ACTION_SET_SENSITIVITY)
                     .putExtra(HeadposeService.EXTRA_SENSITIVITY, sensitivity),
