@@ -1,35 +1,46 @@
 # Quest Headpose Commands
 
-Each command finds the project folder first, then runs from there.
+Project root:
+
+```bash
+cd "/Users/marissameyer/Desktop/Games In VR"
+```
 
 ## Start Receiver
 
 ```bash
-cd "$(dirname "$(dirname "$(find "$HOME" -path '*/scripts/quest_shortcut.sh' -print -quit)")")" && ./scripts/run_receiver.sh
+cd "/Users/marissameyer/Desktop/Games In VR"
+./scripts/run_receiver.sh
 ```
 
 ## Build Quest Headpose
 
 ```bash
-cd "$(dirname "$(dirname "$(find "$HOME" -path '*/scripts/quest_shortcut.sh' -print -quit)")")" && ./dev.sh build_quest_app
+cd "/Users/marissameyer/Desktop/Games In VR"
+./dev.sh build_quest_app
 ```
 
 ## Install Or Update Over USB
 
 ```bash
-cd "$(dirname "$(dirname "$(find "$HOME" -path '*/scripts/quest_shortcut.sh' -print -quit)")")" && adb devices && adb -s "$(adb devices | awk 'NR>1 && $2==\"device\" {print $1; exit}')" install -r "$PWD/quest_headpose_app/app/build/outputs/apk/debug/app-debug.apk"
+cd "/Users/marissameyer/Desktop/Games In VR"
+adb devices
+./dev.sh install_quest_app
 ```
 
 ## Install Or Update Over Wireless ADB
 
 ```bash
-cd "$(dirname "$(dirname "$(find "$HOME" -path '*/scripts/quest_shortcut.sh' -print -quit)")")" && ./dev.sh detect_quest_ip && adb connect "$(sed -n 's/^QUEST_IP=//p' config/quest_headpose.env):5555" && ./dev.sh install_quest_app
+cd "/Users/marissameyer/Desktop/Games In VR"
+adb connect 192.168.0.63:5555
+./dev.sh install_quest_app
 ```
 
 ## Connect Quest Headpose
 
 ```bash
-cd "$(dirname "$(dirname "$(find "$HOME" -path '*/scripts/quest_shortcut.sh' -print -quit)")")" && ./dev.sh connect
+cd "/Users/marissameyer/Desktop/Games In VR"
+./dev.sh connect
 ```
 
 Then open `Quest Headpose` in the headset and press `Connect`.
@@ -37,31 +48,45 @@ Then open `Quest Headpose` in the headset and press `Connect`.
 ## Disconnect
 
 ```bash
-cd "$(dirname "$(dirname "$(find "$HOME" -path '*/scripts/quest_shortcut.sh' -print -quit)")")" && ./dev.sh disconnect
+cd "/Users/marissameyer/Desktop/Games In VR"
+./dev.sh disconnect
 ```
 
 ## Set Receiver Sensitivity From The Mac
 
 ```bash
-cd "$(dirname "$(dirname "$(find "$HOME" -path '*/scripts/quest_shortcut.sh' -print -quit)")")" && ./dev.sh set_sensitivity 240.0
+cd "/Users/marissameyer/Desktop/Games In VR"
+./dev.sh set_sensitivity 240.0
 ```
 
 ## Detect Quest IP
 
 ```bash
-cd "$(dirname "$(dirname "$(find "$HOME" -path '*/scripts/quest_shortcut.sh' -print -quit)")")" && ./dev.sh detect_quest_ip
+cd "/Users/marissameyer/Desktop/Games In VR"
+./dev.sh detect_quest_ip
 ```
 
 ## Receiver Status
 
 ```bash
-cd "$(dirname "$(dirname "$(find "$HOME" -path '*/scripts/quest_shortcut.sh' -print -quit)")")" && ./dev.sh receiver_status
+cd "/Users/marissameyer/Desktop/Games In VR"
+./dev.sh receiver_status
+```
+
+## Open The Shortcut Menu
+
+```bash
+cd "/Users/marissameyer/Desktop/Games In VR"
+./scripts/quest_shortcut.sh
 ```
 
 ## Re-enable Wireless ADB After A Full Quest Reboot
 
 ```bash
-cd "$(dirname "$(dirname "$(find "$HOME" -path '*/scripts/quest_shortcut.sh' -print -quit)")")" && adb devices && adb tcpip 5555 && ./dev.sh detect_quest_ip && adb connect "$(sed -n 's/^QUEST_IP=//p' config/quest_headpose.env):5555"
+cd "/Users/marissameyer/Desktop/Games In VR"
+adb devices
+adb tcpip 5555
+adb connect 192.168.0.63:5555
 ```
 
 ## Quest App Controls
