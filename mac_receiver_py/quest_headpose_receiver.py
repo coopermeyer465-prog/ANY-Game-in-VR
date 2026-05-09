@@ -303,7 +303,7 @@ class Receiver:
                 print(f"Quest TCP disconnected from {peer[0]}:{peer[1]}", flush=True)
 
     def run_output_loop(self) -> None:
-        tick_hz = 120.0
+        tick_hz = 180.0
         tick_interval = 1.0 / tick_hz
         while True:
             time.sleep(tick_interval)
@@ -323,8 +323,8 @@ class Receiver:
                 gate = "blocked(cursor visible)"
                 status_message = "Cursor visible, injection paused"
             else:
-                target_dx = self.target_dx * 0.5
-                target_dy = self.target_dy * 0.5
+                target_dx = self.target_dx * 0.72
+                target_dy = self.target_dy * 0.72
                 dx, dy = self.accumulate_motion(target_dx, target_dy)
                 if dx != 0 or dy != 0:
                     self.injector.inject(dx, dy)
