@@ -311,6 +311,8 @@ class Receiver:
 
     def emit_motion_tick(self) -> None:
         with self.motion_lock:
+            if self.last_packet_at == 0.0 or time.time() - self.last_packet_at > 0.25:
+                return
             cursor_visible = self.injector.is_cursor_visible()
             if cursor_visible and not self.config.visible_cursor_test:
                 self.reset_motion_state_locked()
@@ -321,8 +323,8 @@ class Receiver:
                 gate = "blocked(cursor visible)"
                 status_message = "Cursor visible, injection paused"
             else:
-                target_dx = self.target_dx / 2.0
-                target_dy = self.target_dy / 2.0
+                target_dx = self.target_dx * 0.5
+                target_dy = self.target_dy * 0.5
                 dx, dy = self.accumulate_motion(target_dx, target_dy)
                 if dx != 0 or dy != 0:
                     self.injector.inject(dx, dy)
