@@ -185,6 +185,12 @@ class Receiver:
         self.last_motion_log_at = 0.0
         self.last_status_sent_at = 0.0
         self.last_status_message = ""
+        self.target_dx = 0.0
+        self.target_dy = 0.0
+        self.current_mode = "window"
+        self.latest_yaw = 0.0
+        self.latest_pitch = 0.0
+        self.motion_lock = threading.Lock()
 
         signal.signal(signal.SIGHUP, self._request_reload)
         signal.signal(signal.SIGINT, self._exit_now)
@@ -218,6 +224,7 @@ class Receiver:
             print("Accessibility permission is required for synthetic mouse movement.", flush=True)
 
         threading.Thread(target=self.run_tcp_server, daemon=True).start()
+        threading.Thread(target=self.run_output_loop, daemon=True).start()
 
         while True:
             if self.reload_requested:
@@ -295,6 +302,59 @@ class Receiver:
                 self.reset_motion_state()
                 print(f"Quest TCP disconnected from {peer[0]}:{peer[1]}", flush=True)
 
+    def run_output_loop(self) -> None:
+        tick_hz = 120.0
+        tick_interval = 1.0 / tick_hz
+        while True:
+            time.sleep(tick_interval)
+            self.emit_motion_tick()
+
+    def emit_motion_tick(self) -> None:
+        with self.motion_lock:
+            cursor_visible = self.injector.is_cursor_visible()
+            if cursor_visible and not self.config.visible_cursor_test:
+                self.reset_motion_state_locked()
+                dx = 0
+                dy = 0
+                target_dx = 0.0
+                target_dy = 0.0
+                gate = "blocked(cursor visible)"
+                status_message = "Cursor visible, injection paused"
+            else:
+                target_dx = self.target_dx / 2.0
+                target_dy = self.target_dy / 2.0
+                dx, dy = self.accumulate_motion(target_dx, target_dy)
+                if dx != 0 or dy != 0:
+                    self.injector.inject(dx, dy)
+                if dx == 0 and dy == 0:
+                    gate = "tracking(output below threshold)"
+                    status_message = "Tracking headpose; motion below output threshold"
+                elif cursor_visible:
+                    gate = "injecting(visible test)"
+                    status_message = "Injecting visible-cursor test motion"
+                else:
+                    gate = "injecting"
+                    status_message = "Injecting hidden-cursor motion"
+
+            yaw = self.latest_yaw
+            pitch = self.latest_pitch
+            mode = self.current_mode
+
+        self.last_cursor_visible = cursor_visible
+        self.maybe_log_motion(
+            uptime=int(time.time() - self.receiver_start),
+            quest_ip=self.quest_addr[0] if self.quest_addr else "unknown",
+            mode=mode,
+            yaw=yaw,
+            pitch=pitch,
+            target_dx=target_dx,
+            target_dy=target_dy,
+            dx=dx,
+            dy=dy,
+            gate=gate,
+        )
+        self.send_status(status_message, throttle=True)
+
     def handle_payload(self, payload: bytes) -> None:
         try:
             message = json.loads(payload.decode("utf-8"))
@@ -337,45 +397,13 @@ class Receiver:
         yaw = float(message.get("yaw", 0.0))
         pitch = float(message.get("pitch", 0.0))
         smoothed_yaw, smoothed_pitch = self.smooth_pose(yaw, pitch)
-        cursor_visible = self.injector.is_cursor_visible()
         target_dx, target_dy = self.relative_motion(smoothed_yaw, smoothed_pitch)
-        if cursor_visible and not self.config.visible_cursor_test:
-            self.reset_motion_state()
-            dx = 0
-            dy = 0
-        else:
-            dx, dy = self.accumulate_motion(target_dx, target_dy)
-            self.injector.inject(dx, dy)
-        self.last_cursor_visible = cursor_visible
-
-        quest_ip = message.get("questIp", "unknown")
-        mode = message.get("mode", "window")
-        uptime = int(time.time() - self.receiver_start)
-        if cursor_visible and not self.config.visible_cursor_test:
-            gate = "blocked(cursor visible)"
-            status_message = "Cursor visible, injection paused"
-        elif dx == 0 and dy == 0:
-            gate = "tracking(output below threshold)"
-            status_message = "Tracking headpose; motion below output threshold"
-        elif cursor_visible:
-            gate = "injecting(visible test)"
-            status_message = "Injecting visible-cursor test motion"
-        else:
-            gate = "injecting"
-            status_message = "Injecting hidden-cursor motion"
-        self.maybe_log_motion(
-            uptime=uptime,
-            quest_ip=quest_ip,
-            mode=mode,
-            yaw=yaw,
-            pitch=pitch,
-            target_dx=target_dx,
-            target_dy=target_dy,
-            dx=dx,
-            dy=dy,
-            gate=gate,
-        )
-        self.send_status(status_message, throttle=True)
+        with self.motion_lock:
+            self.target_dx = target_dx
+            self.target_dy = target_dy
+            self.latest_yaw = yaw
+            self.latest_pitch = pitch
+            self.current_mode = message.get("mode", "window")
 
     def maybe_log_motion(
         self,
@@ -516,8 +544,14 @@ class Receiver:
         return dx, dy
 
     def reset_motion_state(self) -> None:
+        with self.motion_lock:
+            self.reset_motion_state_locked()
+
+    def reset_motion_state_locked(self) -> None:
         self.output_dx = 0.0
         self.output_dy = 0.0
+        self.target_dx = 0.0
+        self.target_dy = 0.0
         self.pose_initialized = False
         self.motion_initialized = False
 
