@@ -116,17 +116,38 @@ class MouseInjector:
         current_location = self.get_location(current_event)
         self.release(current_event)
 
+        if self.is_cursor_visible():
+            self.inject_absolute(delta_x, delta_y, current_location)
+        else:
+            self.inject_relative(delta_x, delta_y, current_location)
+
+    def inject_absolute(self, delta_x: int, delta_y: int, current_location: CGPoint) -> None:
         event = self.create_event(
             None,
             KCG_EVENT_MOUSE_MOVED,
-            CGPoint(current_location.x + delta_x, current_location.y + delta_y),
+            CGPoint(current_location.x + delta_x, current_location.y - delta_y),
             KCG_MOUSE_BUTTON_LEFT,
         )
         if not event:
             return
 
         self.set_integer_value_field(event, KCG_MOUSE_EVENT_DELTA_X, delta_x)
-        self.set_integer_value_field(event, KCG_MOUSE_EVENT_DELTA_Y, delta_y)
+        self.set_integer_value_field(event, KCG_MOUSE_EVENT_DELTA_Y, -delta_y)
+        self.post_event(KCG_HID_EVENT_TAP, event)
+        self.release(event)
+
+    def inject_relative(self, delta_x: int, delta_y: int, current_location: CGPoint) -> None:
+        event = self.create_event(
+            None,
+            KCG_EVENT_MOUSE_MOVED,
+            current_location,
+            KCG_MOUSE_BUTTON_LEFT,
+        )
+        if not event:
+            return
+
+        self.set_integer_value_field(event, KCG_MOUSE_EVENT_DELTA_X, delta_x)
+        self.set_integer_value_field(event, KCG_MOUSE_EVENT_DELTA_Y, -delta_y)
         self.post_event(KCG_HID_EVENT_TAP, event)
         self.release(event)
 
