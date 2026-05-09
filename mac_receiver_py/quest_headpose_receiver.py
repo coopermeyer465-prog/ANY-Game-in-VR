@@ -344,12 +344,7 @@ class Receiver:
             dx = 0
             dy = 0
         else:
-            dx = self.quantize_axis(
-                max(-self.config.max_step_pixels, min(self.config.max_step_pixels, target_dx))
-            )
-            dy = self.quantize_axis(
-                max(-self.config.max_step_pixels, min(self.config.max_step_pixels, target_dy))
-            )
+            dx, dy = self.accumulate_motion(target_dx, target_dy)
             self.injector.inject(dx, dy)
         self.last_cursor_visible = cursor_visible
 
@@ -503,6 +498,20 @@ class Receiver:
         if self.config.min_step_pixels > 0 and abs(rounded) < self.config.min_step_pixels:
             return int(math.copysign(self.config.min_step_pixels, rounded))
         return rounded
+
+    def accumulate_motion(self, target_dx: float, target_dy: float) -> tuple[int, int]:
+        clamped_dx = max(-self.config.max_step_pixels, min(self.config.max_step_pixels, target_dx))
+        clamped_dy = max(-self.config.max_step_pixels, min(self.config.max_step_pixels, target_dy))
+
+        self.output_dx += clamped_dx
+        self.output_dy += clamped_dy
+
+        dx = self.quantize_axis(self.output_dx)
+        dy = self.quantize_axis(self.output_dy)
+
+        self.output_dx -= dx
+        self.output_dy -= dy
+        return dx, dy
 
     def reset_motion_state(self) -> None:
         self.output_dx = 0.0
