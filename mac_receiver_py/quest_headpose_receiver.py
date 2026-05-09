@@ -161,6 +161,9 @@ class Receiver:
         self.last_cursor_visible = True
         self.last_packet_at = 0.0
         self.last_heartbeat_at = 0.0
+        self.last_motion_log_at = 0.0
+        self.last_status_sent_at = 0.0
+        self.last_status_message = ""
 
         signal.signal(signal.SIGHUP, self._request_reload)
         signal.signal(signal.SIGINT, self._exit_now)
@@ -344,13 +347,51 @@ class Receiver:
         else:
             gate = "injecting"
             status_message = "Injecting hidden-cursor motion"
+        self.maybe_log_motion(
+            uptime=uptime,
+            quest_ip=quest_ip,
+            mode=mode,
+            yaw=yaw,
+            pitch=pitch,
+            target_dx=target_dx,
+            target_dy=target_dy,
+            dx=dx,
+            dy=dy,
+            gate=gate,
+        )
+        self.send_status(status_message, throttle=True)
+
+    def maybe_log_motion(
+        self,
+        *,
+        uptime: int,
+        quest_ip: str,
+        mode: str,
+        yaw: float,
+        pitch: float,
+        target_dx: float,
+        target_dy: float,
+        dx: int,
+        dy: int,
+        gate: str,
+    ) -> None:
+        now = time.time()
+        if now - self.last_motion_log_at < 0.20:
+            return
+        self.last_motion_log_at = now
         print(
             f"[{uptime}s] {quest_ip} mode={mode} yaw={yaw:.2f} pitch={pitch:.2f} rel=({target_dx:.2f},{target_dy:.2f}) step=({dx},{dy}) {gate}",
             flush=True,
         )
-        self.send_status(status_message)
 
-    def send_status(self, message: str) -> None:
+    def send_status(self, message: str, throttle: bool = False) -> None:
+        now = time.time()
+        if throttle:
+            if message == self.last_status_message and now - self.last_status_sent_at < 0.25:
+                return
+            self.last_status_message = message
+            self.last_status_sent_at = now
+
         payload = json.dumps(
             {
                 "type": "status",
@@ -429,7 +470,7 @@ class Receiver:
         self.last_motion_pitch = pitch
         return (
             self.shape_axis(yaw_delta, self.config.yaw_deadzone_deg, self.config.yaw_scale),
-            self.shape_axis(pitch_delta, self.config.pitch_deadzone_deg, -self.config.pitch_scale),
+            self.shape_axis(pitch_delta, self.config.pitch_deadzone_deg, self.config.pitch_scale),
         )
 
     def quantize_axis(self, value: float) -> int:
