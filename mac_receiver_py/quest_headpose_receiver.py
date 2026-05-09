@@ -471,7 +471,9 @@ class Receiver:
         if magnitude <= deadzone_deg:
             return 0.0
         adjusted = magnitude - deadzone_deg
-        return math.copysign(adjusted * (self.config.sensitivity * 0.012) * axis_scale, delta_deg)
+        exponent = max(0.55, min(1.8, self.config.response_exponent))
+        curved = adjusted ** exponent
+        return math.copysign(curved * (self.config.sensitivity * 0.012) * axis_scale, delta_deg)
 
     def relative_motion(self, yaw: float, pitch: float) -> tuple[float, float]:
         if not self.motion_initialized:
@@ -520,15 +522,20 @@ class Receiver:
         self.motion_initialized = False
 
     def smooth_pose(self, yaw: float, pitch: float) -> tuple[float, float]:
-        alpha = max(0.03, min(0.14, self.config.smoothing_alpha))
         if not self.pose_initialized:
             self.smoothed_yaw = yaw
             self.smoothed_pitch = pitch
             self.pose_initialized = True
             return self.smoothed_yaw, self.smoothed_pitch
 
-        self.smoothed_yaw = self.blend_angle(self.smoothed_yaw, yaw, alpha)
-        self.smoothed_pitch = self.blend_linear(self.smoothed_pitch, pitch, alpha)
+        yaw_gap = abs(self.normalize_angle(yaw - self.smoothed_yaw))
+        pitch_gap = abs(pitch - self.smoothed_pitch)
+        motion_gap = max(yaw_gap, pitch_gap)
+        base_alpha = max(0.03, min(0.14, self.config.smoothing_alpha))
+        adaptive_alpha = min(0.24, base_alpha + min(0.10, motion_gap * 0.015))
+
+        self.smoothed_yaw = self.blend_angle(self.smoothed_yaw, yaw, adaptive_alpha)
+        self.smoothed_pitch = self.blend_linear(self.smoothed_pitch, pitch, adaptive_alpha)
         return self.smoothed_yaw, self.smoothed_pitch
 
     def blend_linear(self, current: float, target: float, alpha: float) -> float:
