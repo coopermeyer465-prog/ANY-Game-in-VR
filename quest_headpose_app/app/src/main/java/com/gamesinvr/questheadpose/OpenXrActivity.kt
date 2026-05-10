@@ -1,6 +1,8 @@
 package com.gamesinvr.questheadpose
 
 import android.app.NativeActivity
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -10,8 +12,11 @@ import android.os.SystemClock
 import android.util.Log
 import java.io.BufferedReader
 import java.io.BufferedWriter
+import java.io.DataInputStream
 import java.io.InputStreamReader
 import java.io.OutputStreamWriter
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -46,6 +51,11 @@ class OpenXrActivity : NativeActivity() {
     private var lastPitch = 0f
     private var lastUiUpdateNs = 0L
     private var lastPoseLogNs = 0L
+    private var desktopStreamJob: Job? = null
+    private var desktopStreamSocket: Socket? = null
+    private var desktopPixelBuffer: ByteBuffer? = null
+    @Volatile
+    private var nativeBridgeReady = false
 
     private val closeReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -131,8 +141,10 @@ class OpenXrActivity : NativeActivity() {
     }
 
     override fun onDestroy() {
+        nativeBridgeReady = false
         unregisterReceiver(controlReceiver)
         unregisterReceiver(closeReceiver)
+        stopDesktopStream()
         shutdownNetworking(
             reason = "OpenXR closed. Connect again to resume streaming.",
             sendReason = true,
@@ -159,6 +171,7 @@ class OpenXrActivity : NativeActivity() {
     }
 
     fun onNativeOpenXrReady(runtimeName: String) {
+        nativeBridgeReady = true
         Log.i(tag, "OpenXR runtime ready: $runtimeName")
         HeadposeRepository.update { current ->
             current.copy(
@@ -201,6 +214,7 @@ class OpenXrActivity : NativeActivity() {
     }
 
     fun onNativeOpenXrError(message: String) {
+        nativeBridgeReady = true
         Log.e(tag, "OpenXR error: $message")
         OpenXrPoseBridge.clearPose()
         shutdownNetworking(
@@ -260,6 +274,7 @@ class OpenXrActivity : NativeActivity() {
                 startReceiveLoop(newSocket, newReader)
                 startHandshakeLoop()
                 startPoseStreamLoop()
+                startDesktopStream(requestedMacIp)
                 HeadposeRepository.update {
                     it.copy(
                         connected = true,
@@ -347,6 +362,103 @@ class OpenXrActivity : NativeActivity() {
                 }
                 delay(8)
             }
+        }
+    }
+
+    private fun startDesktopStream(requestedMacIp: String) {
+        desktopStreamJob?.cancel()
+        updateNativeDesktopStreamStatus(false, "Desktop stream connecting")
+        desktopStreamJob = activityScope.launch {
+            try {
+                val streamSocket = Socket().apply {
+                    connect(InetSocketAddress(requestedMacIp, DESKTOP_STREAM_PORT), 1500)
+                    soTimeout = 4000
+                    tcpNoDelay = true
+                }
+                desktopStreamSocket = streamSocket
+                updateNativeDesktopStreamStatus(true, "Desktop stream live")
+                val input = DataInputStream(streamSocket.getInputStream())
+                while (isActive) {
+                    val width = input.readInt()
+                    val height = input.readInt()
+                    val length = input.readInt()
+                    if (width <= 0 || height <= 0 || length <= 0 || length > 50_000_000) {
+                        throw IllegalStateException("Invalid desktop frame header: ${width}x${height} len=$length")
+                    }
+                    val jpegBytes = ByteArray(length)
+                    input.readFully(jpegBytes)
+                    val bitmap = BitmapFactory.decodeByteArray(jpegBytes, 0, jpegBytes.size)
+                        ?: throw IllegalStateException("Failed to decode desktop frame")
+                    val argbBitmap =
+                        if (bitmap.config == Bitmap.Config.ARGB_8888) {
+                            bitmap
+                        } else {
+                            bitmap.copy(Bitmap.Config.ARGB_8888, false).also { bitmap.recycle() }
+                        }
+
+                    val neededBytes = argbBitmap.byteCount
+                    val buffer =
+                        if (desktopPixelBuffer == null || desktopPixelBuffer?.capacity() != neededBytes) {
+                            ByteBuffer.allocateDirect(neededBytes).order(ByteOrder.nativeOrder()).also {
+                                desktopPixelBuffer = it
+                            }
+                        } else {
+                            desktopPixelBuffer!!
+                    }
+                    buffer.clear()
+                    argbBitmap.copyPixelsToBuffer(buffer)
+                    buffer.flip()
+                    updateNativeDesktopFrame(buffer, argbBitmap.width, argbBitmap.height)
+                    if (argbBitmap !== bitmap) {
+                        bitmap.recycle()
+                    }
+                    argbBitmap.recycle()
+                }
+            } catch (error: Exception) {
+                Log.w(tag, "Desktop stream stopped", error)
+                updateNativeDesktopStreamStatus(false, "Desktop stream error: ${error.message ?: "unknown"}")
+            } finally {
+                try {
+                    desktopStreamSocket?.close()
+                } catch (_: Exception) {
+                }
+                desktopStreamSocket = null
+            }
+        }
+    }
+
+    private fun stopDesktopStream() {
+        desktopStreamJob?.cancel()
+        desktopStreamJob = null
+        try {
+            desktopStreamSocket?.close()
+        } catch (_: Exception) {
+        }
+        desktopStreamSocket = null
+        updateNativeDesktopStreamStatus(false, "Desktop stream idle")
+    }
+
+    private fun updateNativeDesktopFrame(pixelBuffer: ByteBuffer, width: Int, height: Int) {
+        if (!nativeBridgeReady) {
+            return
+        }
+        try {
+            nativeUpdateDesktopFrame(pixelBuffer, width, height)
+        } catch (error: UnsatisfiedLinkError) {
+            nativeBridgeReady = false
+            Log.w(tag, "Desktop frame bridge unavailable yet", error)
+        }
+    }
+
+    private fun updateNativeDesktopStreamStatus(connected: Boolean, message: String) {
+        if (!nativeBridgeReady) {
+            return
+        }
+        try {
+            nativeSetDesktopStreamStatus(connected, message)
+        } catch (error: UnsatisfiedLinkError) {
+            nativeBridgeReady = false
+            Log.w(tag, "Desktop status bridge unavailable yet", error)
         }
     }
 
@@ -503,6 +615,7 @@ class OpenXrActivity : NativeActivity() {
         receiveJob?.cancel()
         handshakeJob?.cancel()
         streamJob?.cancel()
+        stopDesktopStream()
         receiveJob = null
         handshakeJob = null
         streamJob = null
@@ -590,6 +703,9 @@ class OpenXrActivity : NativeActivity() {
         return normalized
     }
 
+    private external fun nativeUpdateDesktopFrame(pixelBuffer: ByteBuffer, width: Int, height: Int)
+    private external fun nativeSetDesktopStreamStatus(connected: Boolean, message: String)
+
     companion object {
         private const val ACTION_CLOSE_OPENXR = "com.gamesinvr.questheadpose.CLOSE_OPENXR"
         private const val ACTION_OPENXR = "com.gamesinvr.questheadpose.OPENXR"
@@ -601,6 +717,7 @@ class OpenXrActivity : NativeActivity() {
         private const val EXTRA_MAC_IP = "mac_ip"
         private const val EXTRA_MAC_PORT = "mac_port"
         private const val EXTRA_SENSITIVITY = "sensitivity"
+        private const val DESKTOP_STREAM_PORT = 7010
 
         fun launch(context: Context) {
             context.startActivity(

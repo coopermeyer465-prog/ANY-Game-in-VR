@@ -171,7 +171,12 @@ class MainActivity : AppCompatActivity() {
                 disconnectRequested = false
                 disconnectButton.performClick()
             }
-            if (autoConnectRequested && !HeadposeRepository.state.value.connected) {
+            val state = HeadposeRepository.state.value
+            val needsReconnect =
+                !state.connected ||
+                    !state.receiverAcknowledged ||
+                    state.localPort <= 0
+            if (autoConnectRequested && needsReconnect) {
                 autoConnectRequested = false
                 connectButton.performClick()
             }
