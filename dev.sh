@@ -10,6 +10,9 @@ RECEIVER_PID_FILE="$RUN_DIR/quest_headpose_receiver.pid"
 RECEIVER_LOG_FILE="$RUN_DIR/quest_headpose_receiver.log"
 RECEIVER_LAUNCH_SCRIPT="$ROOT_DIR/scripts/run_receiver.sh"
 RECEIVER_SCRIPT="$ROOT_DIR/mac_receiver_py/quest_headpose_receiver.py"
+DESKTOP_STREAMER_SCRIPT="$ROOT_DIR/mac_streamer/desktop_streamer.swift"
+DESKTOP_STREAMER_LAUNCH_SCRIPT="$ROOT_DIR/scripts/run_desktop_streamer.sh"
+DESKTOP_STREAMER_PID_FILE="$RUN_DIR/quest_headpose_desktop_streamer.pid"
 JAVA_HOME_DEFAULT="/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home"
 ANDROID_HOME_DEFAULT="/opt/homebrew/share/android-commandlinetools"
 ANDROID_PROJECT_DIR="$ROOT_DIR/quest_headpose_app"
@@ -139,22 +142,38 @@ ensure_receiver_binary() {
 
 receiver_pid() {
   ps -Ao pid=,command= | awk '
-    index($0, "'"$RECEIVER_SCRIPT"' run '"$CONFIG_FILE"'") {
+    index($0, "python3 -u '"$RECEIVER_SCRIPT"' run '"$CONFIG_FILE"'") {
+      print $1
+      exit
+    }
+    index($0, "python3 -u \"$RECEIVER_SCRIPT\" run \"$CONFIG_FILE\"") {
       print $1
       exit
     }
   '
 }
 
+receiver_listening_pid() {
+  lsof -tiTCP:"$LISTEN_PORT" -sTCP:LISTEN 2>/dev/null | head -n 1
+}
+
 start_receiver() {
   ensure_receiver_binary
   local pid
   pid="$(receiver_pid || true)"
-  if [[ -n "$pid" ]]; then
+  if [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null; then
     echo "$pid" >"$RECEIVER_PID_FILE"
     echo "Receiver already running (pid $pid)."
     return
   fi
+  local listening_pid
+  listening_pid="$(receiver_listening_pid || true)"
+  if [[ -n "$listening_pid" ]] && kill -0 "$listening_pid" 2>/dev/null; then
+    echo "$listening_pid" >"$RECEIVER_PID_FILE"
+    echo "Receiver already listening (pid $listening_pid)."
+    return
+  fi
+  rm -f "$RECEIVER_PID_FILE"
 
   : >"$RECEIVER_LOG_FILE"
   osascript \
@@ -162,7 +181,10 @@ start_receiver() {
     -e "tell application \"Terminal\" to do script quoted form of \"$RECEIVER_LAUNCH_SCRIPT\""
   sleep 2
   pid="$(receiver_pid || true)"
-  if [[ -n "$pid" ]]; then
+  if [[ -z "$pid" ]]; then
+    pid="$(receiver_listening_pid || true)"
+  fi
+  if [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null; then
     echo "$pid" >"$RECEIVER_PID_FILE"
     echo "Receiver started. Log: $RECEIVER_LOG_FILE"
   else
@@ -174,6 +196,9 @@ start_receiver() {
 stop_receiver() {
   local pid
   pid="$(receiver_pid || true)"
+  if [[ -z "$pid" ]]; then
+    pid="$(receiver_listening_pid || true)"
+  fi
   if [[ -n "$pid" ]]; then
     kill "$pid"
     echo "Receiver stopped."
@@ -181,6 +206,50 @@ stop_receiver() {
     echo "Receiver not running."
   fi
   rm -f "$RECEIVER_PID_FILE"
+}
+
+desktop_streamer_pid() {
+  ps -Ao pid=,command= | awk '
+    index($0, "swift '"$DESKTOP_STREAMER_SCRIPT"'") {
+      print $1
+      exit
+    }
+  '
+}
+
+start_desktop_streamer() {
+  local pid
+  pid="$(desktop_streamer_pid || true)"
+  if [[ -n "$pid" ]]; then
+    echo "$pid" >"$DESKTOP_STREAMER_PID_FILE"
+    echo "Desktop streamer already running (pid $pid)."
+    return
+  fi
+
+  osascript \
+    -e 'tell application "Terminal" to activate' \
+    -e "tell application \"Terminal\" to do script quoted form of \"$DESKTOP_STREAMER_LAUNCH_SCRIPT\""
+  sleep 2
+  pid="$(desktop_streamer_pid || true)"
+  if [[ -n "$pid" ]]; then
+    echo "$pid" >"$DESKTOP_STREAMER_PID_FILE"
+    echo "Desktop streamer started (pid $pid)."
+  else
+    echo "Desktop streamer failed to stay running." >&2
+    exit 1
+  fi
+}
+
+stop_desktop_streamer() {
+  local pid
+  pid="$(desktop_streamer_pid || true)"
+  if [[ -n "$pid" ]]; then
+    kill "$pid"
+    echo "Desktop streamer stopped."
+  else
+    echo "Desktop streamer not running."
+  fi
+  rm -f "$DESKTOP_STREAMER_PID_FILE"
 }
 
 launch_quest_app() {
@@ -239,6 +308,7 @@ case "${1:-}" in
     write_config_value "MAC_IP" "$MAC_IP"
     adb connect "${QUEST_IP}:${ADB_PORT}" >/dev/null || true
     start_receiver
+    start_desktop_streamer
     launch_quest_app
     echo "Quest Headpose ready."
     echo "Mac IP: $MAC_IP"
@@ -252,7 +322,16 @@ case "${1:-}" in
       --ez request_disconnect true >/dev/null || true
     adb disconnect "${QUEST_IP}:${ADB_PORT}" >/dev/null || true
     stop_receiver
+    stop_desktop_streamer
     echo "Quest disconnected from ADB and receiver stopped."
+    ;;
+
+  start_desktop_streamer)
+    start_desktop_streamer
+    ;;
+
+  stop_desktop_streamer)
+    stop_desktop_streamer
     ;;
 
   receiver_status)
@@ -279,6 +358,8 @@ Usage:
   ./dev.sh set_sensitivity <float>
   ./dev.sh build_quest_app
   ./dev.sh install_quest_app
+  ./dev.sh start_desktop_streamer
+  ./dev.sh stop_desktop_streamer
   ./dev.sh receiver_status
   ./dev.sh shortcut [action] [value]
 EOF
