@@ -4,6 +4,7 @@
 
 #include "pch.h"
 #include "common.h"
+#include "desktop_stream_bridge.h"
 #include "geometry.h"
 #include "graphicsplugin.h"
 #include "graphics_plugin_impl_helpers.h"
@@ -12,6 +13,7 @@
 #ifdef XR_USE_GRAPHICS_API_OPENGL_ES
 
 #include "common/gfxwrapper_opengl.h"
+#include <algorithm>
 #include <common/xr_linear.h>
 
 #define GL(glcmd)                                                                                                    \
@@ -56,6 +58,104 @@ static const char* FragmentShaderGlsl = R"_(#version 320 es
     }
     )_";
 
+static const char* PanelVertexShaderGlsl = R"_(#version 320 es
+
+    in vec3 VertexPos;
+    in vec2 VertexUv;
+
+    out vec2 PSVaryingUv;
+
+    uniform mat4 ModelViewProjection;
+
+    void main() {
+       gl_Position = ModelViewProjection * vec4(VertexPos, 1.0);
+       PSVaryingUv = VertexUv;
+    }
+    )_";
+
+static const char* PanelFragmentShaderGlsl = R"_(#version 320 es
+
+    precision mediump float;
+
+    in vec2 PSVaryingUv;
+    out vec4 FragColor;
+
+    uniform sampler2D PanelTexture;
+    uniform float HasFrame;
+
+    float roundedBox(vec2 p, vec2 b, float r) {
+       vec2 q = abs(p) - b + vec2(r);
+       return length(max(q, vec2(0.0))) + min(max(q.x, q.y), 0.0) - r;
+    }
+
+    void main() {
+       vec2 centeredUv = PSVaryingUv * 2.0 - 1.0;
+       float outerDistance = roundedBox(centeredUv, vec2(0.94, 0.82), 0.08);
+       float outerMask = 1.0 - smoothstep(0.0, 0.015, outerDistance);
+       if (outerMask <= 0.0) {
+           discard;
+       }
+
+       vec3 frameColor = vec3(0.92, 0.92, 0.94);
+       vec3 frameShadow = vec3(0.03, 0.03, 0.04);
+       vec3 titleBarColor = vec3(0.10, 0.11, 0.13);
+       vec3 titleBarGlow = vec3(0.18, 0.19, 0.22);
+       vec3 fallbackTop = vec3(0.18, 0.19, 0.22);
+       vec3 fallbackBottom = vec3(0.08, 0.09, 0.10);
+
+       vec3 color = mix(frameShadow, frameColor, outerMask);
+
+       vec2 innerUv = (PSVaryingUv - vec2(0.045, 0.065)) / vec2(0.91, 0.86);
+       bool insideWindow = innerUv.x >= 0.0 && innerUv.x <= 1.0 && innerUv.y >= 0.0 && innerUv.y <= 1.0;
+
+       if (insideWindow) {
+           float titleMask = step(innerUv.y, 0.11);
+           vec3 titleColor = mix(titleBarGlow, titleBarColor, smoothstep(0.0, 1.0, innerUv.x));
+           color = mix(color, titleColor, titleMask);
+
+           if (innerUv.y > 0.13) {
+               vec2 contentUv = vec2(innerUv.x, (innerUv.y - 0.13) / 0.87);
+               if (HasFrame > 0.5) {
+                   vec4 sampled = texture(PanelTexture, vec2(contentUv.x, 1.0 - contentUv.y));
+                   color = sampled.rgb;
+               } else {
+                   color = mix(fallbackTop, fallbackBottom, contentUv.y);
+                   float grid = step(0.985, abs(fract(contentUv.x * 8.0) - 0.5) * 2.0) +
+                                step(0.985, abs(fract(contentUv.y * 5.0) - 0.5) * 2.0);
+                   color += min(grid, 1.0) * 0.04;
+               }
+           }
+
+           vec2 dotUv = innerUv;
+           vec2 redDot = dotUv - vec2(0.055, 0.055);
+           vec2 yellowDot = dotUv - vec2(0.095, 0.055);
+           vec2 greenDot = dotUv - vec2(0.135, 0.055);
+           float redMask = 1.0 - smoothstep(0.0, 0.012, length(redDot) - 0.018);
+           float yellowMask = 1.0 - smoothstep(0.0, 0.012, length(yellowDot) - 0.018);
+           float greenMask = 1.0 - smoothstep(0.0, 0.012, length(greenDot) - 0.018);
+           color = mix(color, vec3(0.91, 0.35, 0.31), redMask);
+           color = mix(color, vec3(0.92, 0.75, 0.29), yellowMask);
+           color = mix(color, vec3(0.36, 0.78, 0.42), greenMask);
+       }
+
+       FragColor = vec4(color, outerMask);
+    }
+    )_";
+
+struct PanelVertex {
+    XrVector3f Position;
+    XrVector2f Uv;
+};
+
+constexpr PanelVertex c_panelVertices[] = {
+    {{-0.8f, -0.45f, 0.0f}, {0.0f, 1.0f}},
+    {{0.8f, -0.45f, 0.0f}, {1.0f, 1.0f}},
+    {{0.8f, 0.45f, 0.0f}, {1.0f, 0.0f}},
+    {{-0.8f, 0.45f, 0.0f}, {0.0f, 0.0f}},
+};
+
+constexpr uint16_t c_panelIndices[] = {0, 1, 2, 0, 2, 3};
+
 struct OpenGLESGraphicsPlugin : public IGraphicsPlugin {
     OpenGLESGraphicsPlugin(const std::shared_ptr<Options>& options, const std::shared_ptr<IPlatformPlugin> /*unused*/&)
         : m_clearColor(options->GetBackgroundClearColor()) {}
@@ -72,14 +172,29 @@ struct OpenGLESGraphicsPlugin : public IGraphicsPlugin {
         if (m_program != 0) {
             glDeleteProgram(m_program);
         }
+        if (m_panelProgram != 0) {
+            glDeleteProgram(m_panelProgram);
+        }
         if (m_vao != 0) {
             glDeleteVertexArrays(1, &m_vao);
+        }
+        if (m_panelVao != 0) {
+            glDeleteVertexArrays(1, &m_panelVao);
         }
         if (m_cubeVertexBuffer != 0) {
             glDeleteBuffers(1, &m_cubeVertexBuffer);
         }
         if (m_cubeIndexBuffer != 0) {
             glDeleteBuffers(1, &m_cubeIndexBuffer);
+        }
+        if (m_panelVertexBuffer != 0) {
+            glDeleteBuffers(1, &m_panelVertexBuffer);
+        }
+        if (m_panelIndexBuffer != 0) {
+            glDeleteBuffers(1, &m_panelIndexBuffer);
+        }
+        if (m_desktopTexture != 0) {
+            glDeleteTextures(1, &m_desktopTexture);
         }
 
         ksGpuWindow_Destroy(&window);
@@ -189,6 +304,65 @@ struct OpenGLESGraphicsPlugin : public IGraphicsPlugin {
         glVertexAttribPointer(m_vertexAttribCoords, 3, GL_FLOAT, GL_FALSE, sizeof(Geometry::Vertex), nullptr);
         glVertexAttribPointer(m_vertexAttribColor, 3, GL_FLOAT, GL_FALSE, sizeof(Geometry::Vertex),
                               reinterpret_cast<const void*>(sizeof(XrVector3f)));
+
+        GLuint panelVertexShader = glCreateShader(GL_VERTEX_SHADER);
+        glShaderSource(panelVertexShader, 1, &PanelVertexShaderGlsl, nullptr);
+        glCompileShader(panelVertexShader);
+        CheckShader(panelVertexShader);
+
+        GLuint panelFragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+        glShaderSource(panelFragmentShader, 1, &PanelFragmentShaderGlsl, nullptr);
+        glCompileShader(panelFragmentShader);
+        CheckShader(panelFragmentShader);
+
+        m_panelProgram = glCreateProgram();
+        glAttachShader(m_panelProgram, panelVertexShader);
+        glAttachShader(m_panelProgram, panelFragmentShader);
+        glLinkProgram(m_panelProgram);
+        CheckProgram(m_panelProgram);
+
+        glDeleteShader(panelVertexShader);
+        glDeleteShader(panelFragmentShader);
+
+        m_panelMvpUniformLocation = glGetUniformLocation(m_panelProgram, "ModelViewProjection");
+        m_panelTextureUniformLocation = glGetUniformLocation(m_panelProgram, "PanelTexture");
+        m_panelHasFrameUniformLocation = glGetUniformLocation(m_panelProgram, "HasFrame");
+        m_panelVertexAttribCoords = glGetAttribLocation(m_panelProgram, "VertexPos");
+        m_panelVertexAttribUv = glGetAttribLocation(m_panelProgram, "VertexUv");
+
+        glGenBuffers(1, &m_panelVertexBuffer);
+        glBindBuffer(GL_ARRAY_BUFFER, m_panelVertexBuffer);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(c_panelVertices), c_panelVertices, GL_STATIC_DRAW);
+
+        glGenBuffers(1, &m_panelIndexBuffer);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_panelIndexBuffer);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(c_panelIndices), c_panelIndices, GL_STATIC_DRAW);
+
+        glGenVertexArrays(1, &m_panelVao);
+        glBindVertexArray(m_panelVao);
+        glEnableVertexAttribArray(m_panelVertexAttribCoords);
+        glEnableVertexAttribArray(m_panelVertexAttribUv);
+        glBindBuffer(GL_ARRAY_BUFFER, m_panelVertexBuffer);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_panelIndexBuffer);
+        glVertexAttribPointer(m_panelVertexAttribCoords, 3, GL_FLOAT, GL_FALSE, sizeof(PanelVertex), nullptr);
+        glVertexAttribPointer(
+            m_panelVertexAttribUv,
+            2,
+            GL_FLOAT,
+            GL_FALSE,
+            sizeof(PanelVertex),
+            reinterpret_cast<const void*>(sizeof(XrVector3f))
+        );
+
+        glGenTextures(1, &m_desktopTexture);
+        glBindTexture(GL_TEXTURE_2D, m_desktopTexture);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        const uint8_t placeholderPixel[] = {32, 32, 32, 255};
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, placeholderPixel);
+        glBindTexture(GL_TEXTURE_2D, 0);
     }
 
     void CheckShader(GLuint shader) {
@@ -396,6 +570,8 @@ struct OpenGLESGraphicsPlugin : public IGraphicsPlugin {
             glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(ArraySize(Geometry::c_cubeIndices)), GL_UNSIGNED_SHORT, nullptr);
         }
 
+        RenderDesktopPanel(vp);
+
         glBindVertexArray(0);
         glUseProgram(0);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -416,11 +592,87 @@ struct OpenGLESGraphicsPlugin : public IGraphicsPlugin {
     GLint m_modelViewProjectionUniformLocation{0};
     GLint m_vertexAttribCoords{0};
     GLint m_vertexAttribColor{0};
+    GLuint m_panelProgram{0};
+    GLint m_panelMvpUniformLocation{0};
+    GLint m_panelTextureUniformLocation{0};
+    GLint m_panelHasFrameUniformLocation{0};
+    GLint m_panelVertexAttribCoords{0};
+    GLint m_panelVertexAttribUv{0};
     GLuint m_vao{0};
     GLuint m_cubeVertexBuffer{0};
     GLuint m_cubeIndexBuffer{0};
+    GLuint m_panelVao{0};
+    GLuint m_panelVertexBuffer{0};
+    GLuint m_panelIndexBuffer{0};
+    GLuint m_desktopTexture{0};
+    int m_desktopTextureWidth{1};
+    int m_desktopTextureHeight{1};
+    uint64_t m_uploadedDesktopVersion{0};
+    float m_panelAspectRatio{16.0f / 10.0f};
     GLint m_contextApiMajorVersion{0};
     std::array<float, 4> m_clearColor;
+
+    void RenderDesktopPanel(const XrMatrix4x4f& vp) {
+        std::vector<uint8_t> pixels;
+        int width = 0;
+        int height = 0;
+        uint64_t version = 0;
+        const bool hasFrame = DesktopStreamBridge::CopyLatestFrame(pixels, width, height, version);
+        if (hasFrame && version != m_uploadedDesktopVersion && !pixels.empty()) {
+            glBindTexture(GL_TEXTURE_2D, m_desktopTexture);
+            if (width != m_desktopTextureWidth || height != m_desktopTextureHeight) {
+                glTexImage2D(
+                    GL_TEXTURE_2D,
+                    0,
+                    GL_RGBA,
+                    width,
+                    height,
+                    0,
+                    GL_RGBA,
+                    GL_UNSIGNED_BYTE,
+                    pixels.data()
+                );
+                m_desktopTextureWidth = width;
+                m_desktopTextureHeight = height;
+            } else {
+                glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels.data());
+            }
+            glBindTexture(GL_TEXTURE_2D, 0);
+            m_uploadedDesktopVersion = version;
+            if (height > 0) {
+                m_panelAspectRatio = static_cast<float>(width) / static_cast<float>(height);
+            }
+        }
+
+        const float clampedAspect = std::clamp(m_panelAspectRatio, 1.2f, 2.4f);
+        const float panelWidth = 1.35f;
+        const float panelHeight = panelWidth / clampedAspect;
+        XrPosef panelPose{};
+        panelPose.orientation.w = 1.0f;
+        panelPose.position = {0.0f, -0.02f, -1.15f};
+        XrVector3f panelScale{panelWidth, panelHeight, 1.0f};
+        XrMatrix4x4f model;
+        XrMatrix4x4f_CreateTranslationRotationScale(&model, &panelPose.position, &panelPose.orientation, &panelScale);
+        XrMatrix4x4f mvp;
+        XrMatrix4x4f_Multiply(&mvp, &vp, &model);
+
+        glDisable(GL_CULL_FACE);
+        glDisable(GL_DEPTH_TEST);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glUseProgram(m_panelProgram);
+        glUniformMatrix4fv(m_panelMvpUniformLocation, 1, GL_FALSE, reinterpret_cast<const GLfloat*>(&mvp));
+        glUniform1f(m_panelHasFrameUniformLocation, hasFrame ? 1.0f : 0.0f);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, m_desktopTexture);
+        glUniform1i(m_panelTextureUniformLocation, 0);
+        glBindVertexArray(m_panelVao);
+        glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(ArraySize(c_panelIndices)), GL_UNSIGNED_SHORT, nullptr);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        glDisable(GL_BLEND);
+        glEnable(GL_DEPTH_TEST);
+        glEnable(GL_CULL_FACE);
+    }
 };
 }  // namespace
 
