@@ -40,27 +40,27 @@ The receiver cannot inject mouse movement without Accessibility permission.
 Project root:
 
 ```bash
-cd "/Users/marissameyer/Desktop/Games In VR"
+cd "/Desktop/Games In VR"
 ```
 
 Start the receiver:
 
 ```bash
-cd "/Users/marissameyer/Desktop/Games In VR"
+cd "/Desktop/Games In VR"
 ./scripts/run_receiver.sh
 ```
 
 Build the Quest app:
 
 ```bash
-cd "/Users/marissameyer/Desktop/Games In VR"
+cd "/Desktop/Games In VR"
 ./dev.sh build_quest_app
 ```
 
 Install or update over USB:
 
 ```bash
-cd "/Users/marissameyer/Desktop/Games In VR"
+cd "Desktop/Games In VR"
 adb devices
 ./dev.sh install_quest_app
 ```
@@ -68,7 +68,7 @@ adb devices
 Install or update over wireless ADB:
 
 ```bash
-cd "/Users/marissameyer/Desktop/Games In VR"
+cd "/Desktop/Games In VR"
 adb connect 192.168.0.63:5555
 ./dev.sh install_quest_app
 ```
@@ -76,35 +76,35 @@ adb connect 192.168.0.63:5555
 Connect the pipeline:
 
 ```bash
-cd "/Users/marissameyer/Desktop/Games In VR"
+cd "/Desktop/Games In VR"
 ./dev.sh connect
 ```
 
 Disconnect:
 
 ```bash
-cd "/Users/marissameyer/Desktop/Games In VR"
+cd "/Desktop/Games In VR"
 ./dev.sh disconnect
 ```
 
 Set receiver sensitivity from the Mac:
 
 ```bash
-cd "/Users/marissameyer/Desktop/Games In VR"
+cd "/Desktop/Games In VR"
 ./dev.sh set_sensitivity 240.0
 ```
 
 Detect the Quest IP:
 
 ```bash
-cd "/Users/marissameyer/Desktop/Games In VR"
+cd "/Desktop/Games In VR"
 ./dev.sh detect_quest_ip
 ```
 
 Check receiver status:
 
 ```bash
-cd "/Users/marissameyer/Desktop/Games In VR"
+cd "/Desktop/Games In VR"
 ./dev.sh receiver_status
 ```
 
@@ -113,7 +113,7 @@ cd "/Users/marissameyer/Desktop/Games In VR"
 After a full Quest reboot:
 
 ```bash
-cd "/Users/marissameyer/Desktop/Games In VR"
+cd "/Desktop/Games In VR"
 adb devices
 adb tcpip 5555
 adb connect 192.168.0.63:5555
@@ -123,7 +123,7 @@ adb connect 192.168.0.63:5555
 Normal use after wireless ADB is already active:
 
 ```bash
-cd "/Users/marissameyer/Desktop/Games In VR"
+cd "/Desktop/Games In VR"
 ./scripts/run_receiver.sh
 ./dev.sh connect
 ```
