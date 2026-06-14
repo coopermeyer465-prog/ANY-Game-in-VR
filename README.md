@@ -1,5 +1,6 @@
 # Video Demo: 
-[![Watch the video](https://youtube.com/4RbnVRbLFZU)](https://youtube.com/4RbnVRbLFZU)
+[![Watch the video](https://youtu.be/4RbnVRbLFZU?si=w0klzUJbcG7cBbH9)](https://youtu.be/4RbnVRbLFZU?si=w0klzUJbcG7cBbH9)
+
 
 # Quest Headpose
 
