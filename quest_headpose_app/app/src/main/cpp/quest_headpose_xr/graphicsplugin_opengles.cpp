@@ -83,62 +83,16 @@ static const char* PanelFragmentShaderGlsl = R"_(#version 320 es
     uniform sampler2D PanelTexture;
     uniform float HasFrame;
 
-    float roundedBox(vec2 p, vec2 b, float r) {
-       vec2 q = abs(p) - b + vec2(r);
-       return length(max(q, vec2(0.0))) + min(max(q.x, q.y), 0.0) - r;
-    }
-
     void main() {
-       vec2 centeredUv = PSVaryingUv * 2.0 - 1.0;
-       float outerDistance = roundedBox(centeredUv, vec2(0.94, 0.82), 0.08);
-       float outerMask = 1.0 - smoothstep(0.0, 0.015, outerDistance);
-       if (outerMask <= 0.0) {
-           discard;
+       vec3 color;
+       if (HasFrame > 0.5) {
+           vec4 sampled = texture(PanelTexture, PSVaryingUv);
+           color = sampled.rgb;
+       } else {
+           color = mix(vec3(0.34, 0.38, 0.42), vec3(0.18, 0.21, 0.24), PSVaryingUv.y);
        }
 
-       vec3 frameColor = vec3(0.92, 0.92, 0.94);
-       vec3 frameShadow = vec3(0.03, 0.03, 0.04);
-       vec3 titleBarColor = vec3(0.10, 0.11, 0.13);
-       vec3 titleBarGlow = vec3(0.18, 0.19, 0.22);
-       vec3 fallbackTop = vec3(0.18, 0.19, 0.22);
-       vec3 fallbackBottom = vec3(0.08, 0.09, 0.10);
-
-       vec3 color = mix(frameShadow, frameColor, outerMask);
-
-       vec2 innerUv = (PSVaryingUv - vec2(0.045, 0.065)) / vec2(0.91, 0.86);
-       bool insideWindow = innerUv.x >= 0.0 && innerUv.x <= 1.0 && innerUv.y >= 0.0 && innerUv.y <= 1.0;
-
-       if (insideWindow) {
-           float titleMask = step(innerUv.y, 0.11);
-           vec3 titleColor = mix(titleBarGlow, titleBarColor, smoothstep(0.0, 1.0, innerUv.x));
-           color = mix(color, titleColor, titleMask);
-
-           if (innerUv.y > 0.13) {
-               vec2 contentUv = vec2(innerUv.x, (innerUv.y - 0.13) / 0.87);
-               if (HasFrame > 0.5) {
-                   vec4 sampled = texture(PanelTexture, vec2(contentUv.x, 1.0 - contentUv.y));
-                   color = sampled.rgb;
-               } else {
-                   color = mix(fallbackTop, fallbackBottom, contentUv.y);
-                   float grid = step(0.985, abs(fract(contentUv.x * 8.0) - 0.5) * 2.0) +
-                                step(0.985, abs(fract(contentUv.y * 5.0) - 0.5) * 2.0);
-                   color += min(grid, 1.0) * 0.04;
-               }
-           }
-
-           vec2 dotUv = innerUv;
-           vec2 redDot = dotUv - vec2(0.055, 0.055);
-           vec2 yellowDot = dotUv - vec2(0.095, 0.055);
-           vec2 greenDot = dotUv - vec2(0.135, 0.055);
-           float redMask = 1.0 - smoothstep(0.0, 0.012, length(redDot) - 0.018);
-           float yellowMask = 1.0 - smoothstep(0.0, 0.012, length(yellowDot) - 0.018);
-           float greenMask = 1.0 - smoothstep(0.0, 0.012, length(greenDot) - 0.018);
-           color = mix(color, vec3(0.91, 0.35, 0.31), redMask);
-           color = mix(color, vec3(0.92, 0.75, 0.29), yellowMask);
-           color = mix(color, vec3(0.36, 0.78, 0.42), greenMask);
-       }
-
-       FragColor = vec4(color, outerMask);
+       FragColor = vec4(color, 1.0);
     }
     )_";
 
@@ -537,7 +491,7 @@ struct OpenGLESGraphicsPlugin : public IGraphicsPlugin {
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthTexture, 0);
 
         // Clear swapchain and depth buffer.
-        glClearColor(m_clearColor[0], m_clearColor[1], m_clearColor[2], m_clearColor[3]);
+        glClearColor(0.08f, 0.10f, 0.12f, 1.0f);
         glClearDepthf(1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
@@ -570,7 +524,9 @@ struct OpenGLESGraphicsPlugin : public IGraphicsPlugin {
             glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(ArraySize(Geometry::c_cubeIndices)), GL_UNSIGNED_SHORT, nullptr);
         }
 
-        RenderDesktopPanel(vp);
+        // The desktop panel is meant to behave like a headset overlay, not a world object.
+        // Use projection-only view-space coordinates so the frame and pixels stay locked together.
+        RenderDesktopPanel(proj);
 
         glBindVertexArray(0);
         glUseProgram(0);
@@ -644,8 +600,8 @@ struct OpenGLESGraphicsPlugin : public IGraphicsPlugin {
             }
         }
 
-        const float clampedAspect = std::clamp(m_panelAspectRatio, 1.2f, 2.4f);
-        const float panelWidth = 1.35f;
+        const float clampedAspect = std::clamp(m_panelAspectRatio, 0.6f, 2.4f);
+        const float panelWidth = 1.65f;
         const float panelHeight = panelWidth / clampedAspect;
         XrPosef panelPose{};
         panelPose.orientation.w = 1.0f;

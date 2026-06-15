@@ -19,6 +19,7 @@ add_library(
     "${QUEST_XR_DIR}/platformplugin_android.cpp"
     "${QUEST_XR_DIR}/platformplugin_factory.cpp"
     "${QUEST_XR_DIR}/swapchain_image_data.cpp"
+    "${QUEST_XR_DIR}/desktop_stream_bridge.cpp"
     "${QUEST_XR_DIR}/graphicsplugin_factory.cpp"
     "${QUEST_XR_DIR}/graphicsplugin_opengles.cpp"
     $<TARGET_OBJECTS:android_native_app_glue>

@@ -27,6 +27,7 @@ class MainActivity : AppCompatActivity() {
     private val decimal = DecimalFormat("0.00")
     private val sensitivityPresets = QuestPrefs.sensitivityPresets
     private var autoConnectRequested = false
+    private var autoOpenXrRequested = false
     private var disconnectRequested = false
     private var syncingSensitivitySlider = false
 
@@ -162,6 +163,7 @@ class MainActivity : AppCompatActivity() {
             macPortInput.setText(extraMacPort.toString())
         }
         autoConnectRequested = autoConnectRequested || intent.getBooleanExtra("auto_connect", false)
+        autoOpenXrRequested = autoOpenXrRequested || intent.getBooleanExtra("auto_openxr", false)
         disconnectRequested = disconnectRequested || intent.getBooleanExtra("request_disconnect", false)
     }
 
@@ -179,6 +181,10 @@ class MainActivity : AppCompatActivity() {
             if (autoConnectRequested && needsReconnect) {
                 autoConnectRequested = false
                 connectButton.performClick()
+            }
+            if (autoOpenXrRequested) {
+                autoOpenXrRequested = false
+                immersiveButton.performClick()
             }
         }
     }

@@ -224,8 +224,6 @@ class Receiver:
             print("Accessibility permission is required for synthetic mouse movement.", flush=True)
 
         threading.Thread(target=self.run_tcp_server, daemon=True).start()
-        threading.Thread(target=self.run_output_loop, daemon=True).start()
-
         while True:
             if self.reload_requested:
                 self.config.reload()
@@ -398,14 +396,49 @@ class Receiver:
         self.apply_requested_sensitivity(message)
         yaw = float(message.get("yaw", 0.0))
         pitch = float(message.get("pitch", 0.0))
-        smoothed_yaw, smoothed_pitch = self.smooth_pose(yaw, pitch)
-        target_dx, target_dy = self.relative_motion(smoothed_yaw, smoothed_pitch)
+        target_dx, target_dy = self.relative_motion(yaw, pitch)
+        dx, dy = self.direct_motion(target_dx, target_dy)
+        cursor_visible = self.injector.is_cursor_visible()
+        if cursor_visible and not self.config.visible_cursor_test:
+            self.reset_motion_state()
+            gate = "blocked(cursor visible)"
+            status_message = "Cursor visible, injection paused"
+            dx = 0
+            dy = 0
+        else:
+            if dx != 0 or dy != 0:
+                self.injector.inject(dx, dy)
+            if dx == 0 and dy == 0:
+                gate = "tracking(raw output below threshold)"
+                status_message = "Tracking raw headpose; motion below output threshold"
+            elif cursor_visible:
+                gate = "injecting(raw visible test)"
+                status_message = "Injecting raw visible-cursor test motion"
+            else:
+                gate = "injecting(raw)"
+                status_message = "Injecting raw hidden-cursor motion"
+
         with self.motion_lock:
             self.target_dx = target_dx
             self.target_dy = target_dy
             self.latest_yaw = yaw
             self.latest_pitch = pitch
             self.current_mode = message.get("mode", "window")
+
+        self.last_cursor_visible = cursor_visible
+        self.maybe_log_motion(
+            uptime=int(time.time() - self.receiver_start),
+            quest_ip=self.quest_addr[0] if self.quest_addr else "unknown",
+            mode=self.current_mode,
+            yaw=yaw,
+            pitch=pitch,
+            target_dx=target_dx,
+            target_dy=target_dy,
+            dx=dx,
+            dy=dy,
+            gate=gate,
+        )
+        self.send_status(status_message, throttle=True)
 
     def maybe_log_motion(
         self,
@@ -497,13 +530,7 @@ class Receiver:
         self.config.sensitivity = value
 
     def shape_axis(self, delta_deg: float, deadzone_deg: float, axis_scale: float) -> float:
-        magnitude = abs(delta_deg)
-        if magnitude <= deadzone_deg:
-            return 0.0
-        adjusted = magnitude - deadzone_deg
-        exponent = max(0.55, min(1.8, self.config.response_exponent))
-        curved = adjusted ** exponent
-        return math.copysign(curved * (self.config.sensitivity * 0.012) * axis_scale, delta_deg)
+        return delta_deg * (self.config.sensitivity * 0.012) * axis_scale
 
     def relative_motion(self, yaw: float, pitch: float) -> tuple[float, float]:
         if not self.motion_initialized:
@@ -527,9 +554,12 @@ class Receiver:
         rounded = int(round(value))
         if rounded == 0:
             return 0
-        if self.config.min_step_pixels > 0 and abs(rounded) < self.config.min_step_pixels:
-            return int(math.copysign(self.config.min_step_pixels, rounded))
         return rounded
+
+    def direct_motion(self, target_dx: float, target_dy: float) -> tuple[int, int]:
+        clamped_dx = max(-self.config.max_step_pixels, min(self.config.max_step_pixels, target_dx))
+        clamped_dy = max(-self.config.max_step_pixels, min(self.config.max_step_pixels, target_dy))
+        return self.quantize_axis(clamped_dx), self.quantize_axis(clamped_dy)
 
     def accumulate_motion(self, target_dx: float, target_dy: float) -> tuple[int, int]:
         clamped_dx = max(-self.config.max_step_pixels, min(self.config.max_step_pixels, target_dx))
@@ -558,21 +588,7 @@ class Receiver:
         self.motion_initialized = False
 
     def smooth_pose(self, yaw: float, pitch: float) -> tuple[float, float]:
-        if not self.pose_initialized:
-            self.smoothed_yaw = yaw
-            self.smoothed_pitch = pitch
-            self.pose_initialized = True
-            return self.smoothed_yaw, self.smoothed_pitch
-
-        yaw_gap = abs(self.normalize_angle(yaw - self.smoothed_yaw))
-        pitch_gap = abs(pitch - self.smoothed_pitch)
-        motion_gap = max(yaw_gap, pitch_gap)
-        base_alpha = max(0.03, min(0.14, self.config.smoothing_alpha))
-        adaptive_alpha = min(0.24, base_alpha + min(0.10, motion_gap * 0.015))
-
-        self.smoothed_yaw = self.blend_angle(self.smoothed_yaw, yaw, adaptive_alpha)
-        self.smoothed_pitch = self.blend_linear(self.smoothed_pitch, pitch, adaptive_alpha)
-        return self.smoothed_yaw, self.smoothed_pitch
+        return yaw, pitch
 
     def blend_linear(self, current: float, target: float, alpha: float) -> float:
         return current + (target - current) * alpha

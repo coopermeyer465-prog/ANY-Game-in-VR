@@ -53,6 +53,7 @@ class OpenXrActivity : NativeActivity() {
     private var lastPoseLogNs = 0L
     private var desktopStreamJob: Job? = null
     private var desktopStreamSocket: Socket? = null
+    private var desktopStreamIp: String? = null
     private var desktopPixelBuffer: ByteBuffer? = null
     @Volatile
     private var nativeBridgeReady = false
@@ -108,9 +109,16 @@ class OpenXrActivity : NativeActivity() {
         )
 
         questIp = findQuestIp()
-        val savedMacIp = QuestPrefs.getMacIp(this)
-        val savedMacPort = QuestPrefs.getMacPort(this)
-        val shouldConnect = QuestPrefs.getShouldConnect(this)
+        val launchMacIp = intent?.getStringExtra(EXTRA_MAC_IP)?.trim().orEmpty()
+        val launchMacPort = intent?.getIntExtra(EXTRA_MAC_PORT, -1)?.takeIf { it > 0 }
+        val savedMacIp = launchMacIp.ifBlank { QuestPrefs.getMacIp(this) }
+        val savedMacPort = launchMacPort ?: QuestPrefs.getMacPort(this)
+        val shouldConnect = intent?.getBooleanExtra("auto_connect", false) == true ||
+            QuestPrefs.getShouldConnect(this)
+        if (launchMacIp.isNotBlank()) {
+            QuestPrefs.saveMacTarget(this, savedMacIp, savedMacPort)
+            QuestPrefs.saveShouldConnect(this, true)
+        }
         Log.i(
             tag,
             "OpenXR onCreate immersive=true shouldConnect=$shouldConnect savedMacIp=$savedMacIp savedMacPort=$savedMacPort repoConnected=${HeadposeRepository.state.value.connected}",
@@ -173,6 +181,10 @@ class OpenXrActivity : NativeActivity() {
     fun onNativeOpenXrReady(runtimeName: String) {
         nativeBridgeReady = true
         Log.i(tag, "OpenXR runtime ready: $runtimeName")
+        val desktopMacIp = HeadposeRepository.state.value.macIp.ifBlank { QuestPrefs.getMacIp(this) }
+        if (desktopMacIp.isNotBlank()) {
+            startDesktopStream(desktopMacIp)
+        }
         HeadposeRepository.update { current ->
             current.copy(
                 immersiveActive = true,
@@ -366,9 +378,15 @@ class OpenXrActivity : NativeActivity() {
     }
 
     private fun startDesktopStream(requestedMacIp: String) {
+        if (desktopStreamJob?.isActive == true && desktopStreamIp == requestedMacIp) {
+            Log.i(tag, "Desktop stream already active for $requestedMacIp:$DESKTOP_STREAM_PORT")
+            return
+        }
         desktopStreamJob?.cancel()
+        desktopStreamIp = requestedMacIp
+        Log.i(tag, "Desktop stream connecting to $requestedMacIp:$DESKTOP_STREAM_PORT")
         updateNativeDesktopStreamStatus(false, "Desktop stream connecting")
-        desktopStreamJob = activityScope.launch {
+        desktopStreamJob = activityScope.launch(Dispatchers.IO) {
             try {
                 val streamSocket = Socket().apply {
                     connect(InetSocketAddress(requestedMacIp, DESKTOP_STREAM_PORT), 1500)
@@ -376,8 +394,10 @@ class OpenXrActivity : NativeActivity() {
                     tcpNoDelay = true
                 }
                 desktopStreamSocket = streamSocket
+                Log.i(tag, "Desktop stream connected to $requestedMacIp:$DESKTOP_STREAM_PORT")
                 updateNativeDesktopStreamStatus(true, "Desktop stream live")
                 val input = DataInputStream(streamSocket.getInputStream())
+                var frameCount = 0
                 while (isActive) {
                     val width = input.readInt()
                     val height = input.readInt()
@@ -409,6 +429,10 @@ class OpenXrActivity : NativeActivity() {
                     argbBitmap.copyPixelsToBuffer(buffer)
                     buffer.flip()
                     updateNativeDesktopFrame(buffer, argbBitmap.width, argbBitmap.height)
+                    frameCount += 1
+                    if (frameCount == 1 || frameCount % 60 == 0) {
+                        Log.i(tag, "Desktop stream decoded frame $frameCount ${argbBitmap.width}x${argbBitmap.height}")
+                    }
                     if (argbBitmap !== bitmap) {
                         bitmap.recycle()
                     }
@@ -423,6 +447,9 @@ class OpenXrActivity : NativeActivity() {
                 } catch (_: Exception) {
                 }
                 desktopStreamSocket = null
+                if (desktopStreamIp == requestedMacIp) {
+                    desktopStreamIp = null
+                }
             }
         }
     }
@@ -435,6 +462,7 @@ class OpenXrActivity : NativeActivity() {
         } catch (_: Exception) {
         }
         desktopStreamSocket = null
+        desktopStreamIp = null
         updateNativeDesktopStreamStatus(false, "Desktop stream idle")
     }
 
@@ -707,6 +735,10 @@ class OpenXrActivity : NativeActivity() {
     private external fun nativeSetDesktopStreamStatus(connected: Boolean, message: String)
 
     companion object {
+        init {
+            System.loadLibrary("quest_headpose_xr")
+        }
+
         private const val ACTION_CLOSE_OPENXR = "com.gamesinvr.questheadpose.CLOSE_OPENXR"
         private const val ACTION_OPENXR = "com.gamesinvr.questheadpose.OPENXR"
         private const val IMMERSIVE_HMD_CATEGORY = "org.khronos.openxr.intent.category.IMMERSIVE_HMD"
@@ -720,11 +752,17 @@ class OpenXrActivity : NativeActivity() {
         private const val DESKTOP_STREAM_PORT = 7010
 
         fun launch(context: Context) {
+            val state = HeadposeRepository.state.value
+            val macIp = state.macIp.ifBlank { QuestPrefs.getMacIp(context) }
+            val macPort = if (state.macPort > 0) state.macPort else QuestPrefs.getMacPort(context)
             context.startActivity(
                 Intent(context, OpenXrActivity::class.java)
                     .setAction(ACTION_OPENXR)
                     .addCategory(IMMERSIVE_HMD_CATEGORY)
-                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    .putExtra(EXTRA_MAC_IP, macIp)
+                    .putExtra(EXTRA_MAC_PORT, macPort)
+                    .putExtra("auto_connect", macIp.isNotBlank()),
             )
         }
 

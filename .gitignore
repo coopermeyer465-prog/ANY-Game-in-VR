@@ -3,6 +3,7 @@
 .gradle-home/
 .kotlin/
 build/
+.build/
 run/
 quest_headpose_app/.gradle/
 quest_headpose_app/.kotlin/

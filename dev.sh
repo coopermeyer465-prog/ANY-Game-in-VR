@@ -13,6 +13,7 @@ RECEIVER_SCRIPT="$ROOT_DIR/mac_receiver_py/quest_headpose_receiver.py"
 DESKTOP_STREAMER_SCRIPT="$ROOT_DIR/mac_streamer/desktop_streamer.swift"
 DESKTOP_STREAMER_LAUNCH_SCRIPT="$ROOT_DIR/scripts/run_desktop_streamer.sh"
 DESKTOP_STREAMER_PID_FILE="$RUN_DIR/quest_headpose_desktop_streamer.pid"
+DESKTOP_STREAMER_EXEC="$ROOT_DIR/.build/mac/desktop_streamer"
 JAVA_HOME_DEFAULT="/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home"
 ANDROID_HOME_DEFAULT="/opt/homebrew/share/android-commandlinetools"
 ANDROID_PROJECT_DIR="$ROOT_DIR/quest_headpose_app"
@@ -210,6 +211,10 @@ stop_receiver() {
 
 desktop_streamer_pid() {
   ps -Ao pid=,command= | awk '
+    index($0, "'"$DESKTOP_STREAMER_EXEC"'") {
+      print $1
+      exit
+    }
     index($0, "swift '"$DESKTOP_STREAMER_SCRIPT"'") {
       print $1
       exit
@@ -217,10 +222,17 @@ desktop_streamer_pid() {
   '
 }
 
+desktop_streamer_listening_pid() {
+  lsof -tiTCP:7010 -sTCP:LISTEN 2>/dev/null | head -n 1
+}
+
 start_desktop_streamer() {
   local pid
   pid="$(desktop_streamer_pid || true)"
-  if [[ -n "$pid" ]]; then
+  if [[ -z "$pid" ]]; then
+    pid="$(desktop_streamer_listening_pid || true)"
+  fi
+  if [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null; then
     echo "$pid" >"$DESKTOP_STREAMER_PID_FILE"
     echo "Desktop streamer already running (pid $pid)."
     return
@@ -231,7 +243,10 @@ start_desktop_streamer() {
     -e "tell application \"Terminal\" to do script quoted form of \"$DESKTOP_STREAMER_LAUNCH_SCRIPT\""
   sleep 2
   pid="$(desktop_streamer_pid || true)"
-  if [[ -n "$pid" ]]; then
+  if [[ -z "$pid" ]]; then
+    pid="$(desktop_streamer_listening_pid || true)"
+  fi
+  if [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null; then
     echo "$pid" >"$DESKTOP_STREAMER_PID_FILE"
     echo "Desktop streamer started (pid $pid)."
   else
@@ -243,6 +258,9 @@ start_desktop_streamer() {
 stop_desktop_streamer() {
   local pid
   pid="$(desktop_streamer_pid || true)"
+  if [[ -z "$pid" ]]; then
+    pid="$(desktop_streamer_listening_pid || true)"
+  fi
   if [[ -n "$pid" ]]; then
     kill "$pid"
     echo "Desktop streamer stopped."
@@ -255,9 +273,10 @@ stop_desktop_streamer() {
 launch_quest_app() {
   adb_on_target shell am start \
     -n com.gamesinvr.questheadpose/.MainActivity \
-    --es mac_ip "$MAC_IP" \
-    --ei mac_port "$LISTEN_PORT" \
-    --ez auto_connect true >/dev/null
+	    --es mac_ip "$MAC_IP" \
+	    --ei mac_port "$LISTEN_PORT" \
+	    --ez auto_connect true \
+	    --ez auto_openxr true >/dev/null
 }
 
 case "${1:-}" in

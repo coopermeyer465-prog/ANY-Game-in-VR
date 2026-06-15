@@ -9,6 +9,7 @@
 #include "platformplugin.h"
 #include "graphicsplugin.h"
 #include "openxr_program.h"
+#include "desktop_stream_bridge.h"
 
 #if defined(_WIN32)
 // Favor the high performance NVIDIA or AMD GPUs
@@ -82,6 +83,43 @@ void NotifyOpenXrPose(android_app* app, float yaw, float pitch, float roll) {
     }
     env->DeleteLocalRef(activityClass);
 }
+
+#ifdef XR_USE_PLATFORM_ANDROID
+}  // namespace
+
+extern "C" JNIEXPORT void JNICALL
+Java_com_gamesinvr_questheadpose_OpenXrActivity_nativeUpdateDesktopFrame(JNIEnv* env, jobject /*thiz*/, jobject pixelBuffer,
+                                                                          jint width, jint height) {
+    if (pixelBuffer == nullptr || width <= 0 || height <= 0) {
+        return;
+    }
+
+    void* buffer = env->GetDirectBufferAddress(pixelBuffer);
+    const jlong capacity = env->GetDirectBufferCapacity(pixelBuffer);
+    const size_t expectedBytes = static_cast<size_t>(width) * static_cast<size_t>(height) * 4u;
+    if (buffer == nullptr || capacity < static_cast<jlong>(expectedBytes)) {
+        Log::Write(Log::Level::Error,
+                   Fmt("nativeUpdateDesktopFrame got invalid buffer capacity=%lld expected=%zu",
+                       static_cast<long long>(capacity), expectedBytes));
+        return;
+    }
+
+    DesktopStreamBridge::UpdateLatestFrame(static_cast<const uint8_t*>(buffer), width, height);
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_com_gamesinvr_questheadpose_OpenXrActivity_nativeSetDesktopStreamStatus(JNIEnv* env, jobject /*thiz*/,
+                                                                            jboolean connected, jstring message) {
+    const char* messageChars = message != nullptr ? env->GetStringUTFChars(message, nullptr) : nullptr;
+    const std::string messageText = messageChars != nullptr ? messageChars : "";
+    if (messageChars != nullptr) {
+        env->ReleaseStringUTFChars(message, messageChars);
+    }
+    DesktopStreamBridge::SetStreamStatus(connected == JNI_TRUE, messageText);
+}
+
+namespace {
+#endif
 
 #ifdef XR_USE_PLATFORM_ANDROID
 void ShowHelp() {
